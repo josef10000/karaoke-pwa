@@ -8,6 +8,7 @@ Este projeto foi construído utilizando **React**, **Vite** e **CSS Vanilla (Cyb
 
 ## ✨ Recursos Chave
 
+*   **🎙️ Escolha de Captador de Áudio (Microfone Físico)**: Menu seletor integrado que detecta e lista dinamicamente todos os microfones conectados ao dispositivo (como o microfone interno do celular/notebook ou o microfone de entrada de linha da caixa de som Bluetooth). Permite alterar o captador ativo instantaneamente sem perder o progresso.
 *   **⚡ Pontuação por Pitch Octave Neutral**: O algoritmo de autocorrelação matemática analisa a onda sonora do microfone a cada 50ms para identificar a nota musical cantada. O sistema é neutro de oitava (Octave Neutral), permitindo que homens, mulheres e crianças pontuem perfeitamente de forma justa.
 *   **📂 Interpretador UltraStar Deluxe (.txt)**: Uma funcionalidade incrível de arrastar e soltar (Drag & Drop) que permite fazer o upload de qualquer arquivo `.txt` da comunidade UltraStar. O app faz o parsing automático, sincroniza a melodia e as letras em segundos.
 *   **🔥 Catálogo Híbrido de 100 Músicas**: Contém 50 músicas nacionais brasileiras (desde clássicos sertanejos como *Evidências* e *Boate Azul* até pop rock nacional) e 50 músicas internacionais (como *Bohemian Rhapsody* e *Creep*). As músicas de demonstração contam com mapeamento de pitch completo.

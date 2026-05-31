@@ -93,15 +93,22 @@ export function midiToNoteName(midiNote) {
   return NOTE_STRINGS[noteIndex] + octave;
 }
 
-// Inicializador da Web Audio API para gravação
-export async function initAudioStream(onAudioProcess, thresholdGetter) {
+// Inicializador da Web Audio API para gravação com suporte a seleção de dispositivo
+export async function initAudioStream(onAudioProcess, thresholdGetter, deviceId = null) {
   try {
+    const audioConstraints = {
+      echoCancellation: false, // Desliga para maior precisão de notas musicais singulares
+      noiseSuppression: false,
+      autoGainControl: false
+    };
+
+    // Aplica o ID do dispositivo de áudio selecionado, se houver
+    if (deviceId) {
+      audioConstraints.deviceId = { exact: deviceId };
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false, // Desliga para maior precisão de notas musicais singulares
-        noiseSuppression: false,
-        autoGainControl: false
-      }
+      audio: audioConstraints
     });
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();

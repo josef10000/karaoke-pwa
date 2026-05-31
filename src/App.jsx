@@ -15,6 +15,9 @@ export default function App() {
   // 0.015 é um valor padrão excelente para ambientes normais
   const [threshold, setThreshold] = useState(0.015);
 
+  // Dispositivo de entrada de áudio selecionado (microfone)
+  const [selectedAudioDevice, setSelectedAudioDevice] = useState('');
+
   // Registra o Service Worker do PWA nativamente
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -53,37 +56,33 @@ export default function App() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen">
+    <div className="app-container">
       
       {/* Header Global */}
-      <header className="border-b border-white/5 bg-black/40 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="app-header">
+        <div className="header-content">
           <div 
             onClick={handleNavigateHome} 
-            className="flex items-center gap-2 cursor-pointer group"
+            className="brand-container"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-cyan-400 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-all">
+            <div className="logo-badge">
               <Mic2 className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-black font-title text-base tracking-tight text-white block">
-                SINFONIA
-              </span>
-              <span className="text-[9px] font-bold text-color-text-muted tracking-widest leading-none block">
-                KARAOKE ONLINE
-              </span>
+              <span className="brand-name">SINFONIA</span>
+              <span className="brand-subtitle block">KARAOKE ONLINE</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-1.5 text-xs text-secondary font-bold font-title">
-            <Sparkles className="w-4 h-4 animate-spin-slow" />
+          <div className="pwa-badge">
+            <Sparkles className="w-4 h-4" />
             <span>PWA Instalável</span>
           </div>
         </div>
       </header>
 
       {/* Main View Container */}
-      <main className="flex-1 flex flex-col px-4 md:px-6 py-4">
+      <main className="screen-container">
         {currentScreen === 'home' && (
           <>
             <Home
@@ -92,7 +91,12 @@ export default function App() {
             />
             {/* Painel de Calibração visível de forma conveniente no rodapé da Home */}
             <div className="max-w-6xl w-full mx-auto mt-6">
-              <AudioControl threshold={threshold} setThreshold={setThreshold} />
+              <AudioControl 
+                threshold={threshold} 
+                setThreshold={setThreshold} 
+                selectedAudioDevice={selectedAudioDevice}
+                setSelectedAudioDevice={setSelectedAudioDevice}
+              />
             </div>
           </>
         )}
@@ -106,6 +110,8 @@ export default function App() {
             song={selectedSong}
             threshold={threshold}
             setThreshold={setThreshold}
+            selectedAudioDevice={selectedAudioDevice}
+            setSelectedAudioDevice={setSelectedAudioDevice}
             onFinishSong={handleFinishSong}
             onNavigateHome={handleNavigateHome}
           />
