@@ -1,0 +1,324 @@
+/* ==========================================
+   DESIGN SYSTEM - SINFONIA KARAOKE (CYBER-NEON)
+   ========================================== */
+
+:root {
+  /* Cores Base */
+  --bg-deep: #08090f;
+  --bg-darker: #0c0d16;
+  --bg-card: rgba(18, 20, 35, 0.65);
+  --bg-glass: rgba(12, 13, 24, 0.45);
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-neon-glow: rgba(147, 51, 234, 0.15);
+
+  /* HSL Tailored Colors */
+  --color-primary: hsl(265, 85%, 60%);     /* Roxo Neon */
+  --color-secondary: hsl(185, 100%, 50%);  /* Azul Glacial */
+  --color-accent: hsl(330, 95%, 60%);      /* Rosa Magenta */
+  --color-perfect: hsl(145, 85%, 48%);     /* Verde Brilhante */
+  --color-warning: hsl(40, 95%, 55%);      /* Amarelo/Laranja */
+  --color-text: #f3f4f6;
+  --color-text-muted: #9ca3af;
+
+  /* Fontes */
+  --font-title: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Sombras */
+  --shadow-neon-purple: 0 0 20px rgba(147, 51, 234, 0.25);
+  --shadow-neon-blue: 0 0 20px rgba(6, 182, 212, 0.25);
+  --shadow-neon-pink: 0 0 20px rgba(236, 72, 153, 0.25);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  /* Transições */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease-out;
+}
+
+/* Reset Geral */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Scrollbars Estilizadas */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+  box-shadow: var(--shadow-neon-purple);
+}
+
+/* Efeito de Fundo Abstrato (Luzes Difusas) */
+body::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  z-index: -1;
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(147, 51, 234, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Estilos de Componentes Glassmorphism */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-glass);
+  border-radius: 16px;
+  transition: var(--transition-smooth);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(147, 51, 234, 0.3);
+  box-shadow: 0 12px 40px rgba(147, 51, 234, 0.15), var(--shadow-glass);
+}
+
+/* Gradientes de Texto (Premium Headers) */
+.text-gradient-purple {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Botões Cyber Premium */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #7e22ce 100%);
+  color: #fff;
+  box-shadow: var(--shadow-neon-purple);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(147, 51, 234, 0.5);
+  filter: brightness(1.1);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  color: var(--color-secondary);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+.btn-secondary:hover {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-neon-blue);
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(225, 29, 72, 0.1) 100%);
+  color: var(--color-accent);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+.btn-danger:hover {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(225, 29, 72, 0.2) 100%);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-neon-pink);
+  transform: translateY(-2px);
+}
+
+/* Inputs Premium */
+.input-field {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+.input-field:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-neon-purple);
+}
+
+/* Visualizador de Pitch (Guitar Hero/SingStar Style) */
+.pitch-track-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: rgba(8, 9, 15, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.pitch-grid-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pitch-target-block {
+  position: absolute;
+  height: 18px;
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.4) 0%, rgba(147, 51, 234, 0.4) 100%);
+  border: 1px solid var(--color-secondary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 10px;
+  color: #fff;
+  text-shadow: 0 0 4px #000;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+  transition: transform 0.05s linear;
+}
+
+.pitch-user-pointer {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 15px var(--color-accent), 0 0 30px var(--color-accent);
+  left: 30%;
+  transform: translate(-50%, -50%);
+  transition: top 0.08s cubic-bezier(0.1, 0.8, 0.3, 1);
+  z-index: 5;
+}
+
+.pitch-user-pointer.perfect {
+  background: var(--color-perfect);
+  box-shadow: 0 0 20px var(--color-perfect), 0 0 40px var(--color-perfect);
+}
+
+/* Barra de Destaque da Letra Ativa */
+.lyric-line {
+  font-family: var(--font-title);
+  font-size: 26px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  margin: 12px 0;
+  transition: var(--transition-smooth);
+  letter-spacing: -0.01em;
+}
+
+.lyric-line.active {
+  color: #fff;
+  transform: scale(1.08);
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(147, 51, 234, 0.3);
+}
+
+.lyric-word {
+  display: inline-block;
+  margin: 0 4px;
+  transition: color 0.15s ease-out;
+}
+
+.lyric-word.sung {
+  color: var(--color-secondary);
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+}
+
+/* Animações e Partículas */
+@keyframes explode {
+  0% { transform: scale(1) translate(-50%, -50%); opacity: 1; }
+  100% { transform: scale(2.2) translate(-50%, -50%); opacity: 0; }
+}
+
+.particle-blast {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--color-perfect);
+  box-shadow: 0 0 20px var(--color-perfect);
+  pointer-events: none;
+  animation: explode 0.4s ease-out forwards;
+}
+
+/* Responsividade Adaptativa (Mobile Paisagem / Desktop) */
+@media (max-width: 768px) {
+  .lyric-line {
+    font-size: 18px;
+  }
+}
+
+/* Custom UI Layouts */
+.screen-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title-glow {
+  text-shadow: 0 0 20px rgba(147, 51, 234, 0.6);
+}
