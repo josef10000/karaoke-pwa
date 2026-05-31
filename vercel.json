@@ -1,6 +1,14 @@
 {
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/((?!assets|manifest.json|sw.js|favicon.ico).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
