@@ -4,6 +4,9 @@ import { initAudioStream } from '../utils/audio';
 import { findTargetNoteAtTime, evaluatePitch, getFeedbackStyle } from '../utils/scoring';
 import { demoSongsNotes } from '../songs-catalog';
 import { extractYouTubeId } from '../utils/ultrastar';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
 
 
 export default function Player({ song, threshold, setThreshold, selectedAudioDevice, setSelectedAudioDevice, onFinishSong, onNavigateHome }) {
@@ -16,6 +19,53 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   const [activeYoutubeId, setActiveYoutubeId] = useState(song.youtubeId);
   const [tempYoutubeLink, setTempYoutubeLink] = useState('');
   const [youtubeError, setYoutubeError] = useState('');
+
+  // Busca se existe algum link customizado e ativo gravado no Firebase para esta música
+  useEffect(() => {
+    const fetchCustomYoutubeLink = async () => {
+      try {
+        const docRef = doc(db, 'song_links', song.id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().youtubeId) {
+          console.log(`📡 Carregado link alternativo persistente do Firebase para a música ${song.title}: ${docSnap.data().youtubeId}`);
+          setActiveYoutubeId(docSnap.data().youtubeId);
+        } else {
+          setActiveYoutubeId(song.youtubeId);
+        }
+      } catch (err) {
+        console.warn("Erro ao buscar link customizado no Firebase: ", err);
+      }
+    };
+    fetchCustomYoutubeLink();
+  }, [song.id]);
+
+  // Grava e persiste o novo link correto do YouTube no Firebase Firestore
+  const handleUpdateVideoId = async (linkToParse) => {
+    const id = extractYouTubeId(linkToParse);
+    if (!id) {
+      setYoutubeError('Link do YouTube inválido!');
+      return;
+    }
+
+    setActiveYoutubeId(id);
+    setTempYoutubeLink('');
+    setYoutubeError('');
+
+    try {
+      const docRef = doc(db, 'song_links', song.id);
+      await setDoc(docRef, {
+        songId: song.id,
+        youtubeId: id,
+        songTitle: song.title,
+        songArtist: song.artist,
+        updatedAt: new Date().toISOString()
+      });
+      console.log(`💾 Sucesso! Link correto persistido no Firebase para a música ${song.title}`);
+    } catch (err) {
+      console.error("Falha ao gravar link correto no Firebase: ", err);
+    }
+  };
+
 
   
   // Lista de microfones disponíveis para o seletor rápido no Player
@@ -320,16 +370,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
                     className="flex-1 select-field text-xs py-1.5 px-3 bg-white/5 border border-white/10 rounded-lg text-white"
                   />
                   <button
-                    onClick={() => {
-                      const id = extractYouTubeId(tempYoutubeLink);
-                      if (id) {
-                        setActiveYoutubeId(id);
-                        setTempYoutubeLink('');
-                        setYoutubeError('');
-                      } else {
-                        setYoutubeError('Link inválido!');
-                      }
-                    }}
+                    onClick={() => handleUpdateVideoId(tempYoutubeLink)}
                     className="btn btn-secondary text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
                   >
                     <Link2 className="w-3.5 h-3.5" /> Mudar
@@ -490,12 +531,11 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
                 className="flex-1 select-field text-[11px] py-1.5 px-2.5 bg-white/5 border border-white/10 rounded-lg text-white"
               />
               <button
-                onClick={() => {
+                onClick={async () => {
                   const id = extractYouTubeId(tempYoutubeLink);
                   if (id) {
-                    setActiveYoutubeId(id);
-                    setTempYoutubeLink('');
-                    alert("Vídeo atualizado com sucesso!");
+                    await handleUpdateVideoId(tempYoutubeLink);
+                    alert("Vídeo atualizado e gravado no Firebase!");
                   } else {
                     alert("Link do YouTube inválido.");
                   }
