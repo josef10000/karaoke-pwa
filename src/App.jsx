@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic2, Music, Mic, Upload, Trophy } from 'lucide-react';
+import { Mic2, Music, Mic, Trophy } from 'lucide-react';
 import Home from './components/Home';
 import Player from './components/Player';
 import Results from './components/Results';
@@ -95,13 +95,7 @@ export default function App() {
               >
                 <Mic className="w-5 h-5" />
               </button>
-              <button
-                onClick={() => setActiveTab('import')}
-                className={`tab-link-btn ${activeTab === 'import' ? 'active' : ''}`}
-                title="Importar Arquivo de Canto UltraStar"
-              >
-                <Upload className="w-5 h-5" />
-              </button>
+
               <button
                 onClick={() => setActiveTab('leaderboard')}
                 className={`tab-link-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
@@ -121,7 +115,6 @@ export default function App() {
             {activeTab === 'catalog' && (
               <Home
                 onSelectSong={handleSelectSong}
-                onNavigateToImport={() => setActiveTab('import')}
               />
             )}
             
@@ -178,13 +171,7 @@ export default function App() {
           >
             <Mic className="w-6 h-6" />
           </button>
-          <button
-            onClick={() => setActiveTab('import')}
-            className={`mobile-tab-btn ${activeTab === 'import' ? 'active' : ''}`}
-            title="Importar UltraStar"
-          >
-            <Upload className="w-6 h-6" />
-          </button>
+
           <button
             onClick={() => setActiveTab('leaderboard')}
             className={`mobile-tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}

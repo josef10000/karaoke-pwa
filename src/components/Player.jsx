@@ -348,7 +348,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
           },
           onError: (event) => {
             console.warn(`⚠️ Erro detectado no player do YouTube (Código: ${event.data}).`);
-            alert("Este playback do YouTube não pôde ser reproduzido diretamente (pode estar bloqueado por direitos autorais ou restrição de domínio). Por favor, use o campo no painel para inserir um link alternativo de karaokê funcional.");
+            setYoutubeError('error');
           }
         }
       });
@@ -578,6 +578,67 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
             </div>
           )}
 
+          {/* Overlay Glassmorphic de Recuperação/Substituição de Link do YouTube */}
+          {youtubeError && (
+            <div className="absolute inset-0 bg-black/90 backdrop-filter backdrop-blur-lg flex flex-col items-center justify-center p-6 text-center z-20 animate-fade-in">
+              <div className="glass-panel p-6 max-w-sm w-full border border-purple-500/30 shadow-[0_0_50px_rgba(168,85,247,0.15)] flex flex-col items-center">
+                <AlertTriangle className="w-10 h-10 text-yellow-500 mb-3 animate-pulse" />
+                <h3 className="text-base font-bold font-title text-white mb-1">Vídeo Indisponível?</h3>
+                <p className="text-[11px] text-color-text-muted mb-4 leading-relaxed">
+                  {youtubeError === 'setup'
+                    ? "Atualize o link do playback do YouTube antes de iniciar sua performance vocal."
+                    : "Este playback do YouTube está bloqueado por direitos autorais, restrição de domínio ou foi removido."}
+                  <br />
+                  Insira uma URL ou ID alternativo do YouTube para corrigir:
+                </p>
+                
+                <div className="flex flex-col gap-2.5 w-full">
+                  <input
+                    type="text"
+                    placeholder="Cole o link correto do YouTube aqui..."
+                    value={tempYoutubeLink}
+                    onChange={(e) => setTempYoutubeLink(e.target.value)}
+                    className="select-field text-xs py-2.5 px-3 bg-white/5 border border-white/10 rounded-xl text-white text-center placeholder-white/20 focus:border-purple-500 transition-all outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setYoutubeError('');
+                        setTempYoutubeLink('');
+                      }}
+                      className="btn btn-secondary flex-1 py-1.5 text-xs rounded-xl"
+                      style={{ minHeight: 'auto' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!tempYoutubeLink.trim()) {
+                          alert("Por favor, digite ou cole um link válido do YouTube.");
+                          return;
+                        }
+                        const id = extractYouTubeId(tempYoutubeLink);
+                        if (id) {
+                          await handleUpdateVideoId(tempYoutubeLink);
+                        } else {
+                          alert("Link do YouTube inválido.");
+                        }
+                      }}
+                      className="btn btn-primary flex-1 py-1.5 text-xs rounded-xl text-white font-semibold"
+                      style={{ minHeight: 'auto' }}
+                    >
+                      Salvar e Atualizar
+                    </button>
+                  </div>
+                </div>
+                
+                <p className="text-[9px] text-color-text-muted mt-3">
+                  O link correto será salvo permanentemente para esta música na plataforma.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Overlay de Canto Inicial */}
           {!isPlaying && (
             <div className="absolute inset-0 bg-black/85 backdrop-filter backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-10 overflow-y-auto">
@@ -595,10 +656,22 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
               {/* Botão de Sair no Overlay de Preparação para o cantor poder voltar se quiser */}
               <button
                 onClick={() => { stopAudioCapture(); onNavigateHome(); }}
-                className="btn btn-secondary text-xs py-2 px-4 rounded-xl flex items-center gap-1.5 mb-6"
+                className="btn btn-secondary text-xs py-2 px-4 rounded-xl flex items-center gap-1.5 mb-3"
                 style={{ minHeight: 'auto' }}
               >
                 <LogOut className="w-3.5 h-3.5" /> Cancelar e Voltar ao Catálogo
+              </button>
+
+              {/* Botão de alteração de vídeo preventiva */}
+              <button
+                onClick={() => {
+                  setTempYoutubeLink('');
+                  setYoutubeError('setup');
+                }}
+                className="text-xs text-color-text-muted hover:text-white transition flex items-center gap-1.5 mb-6 underline decoration-dotted opacity-80 hover:opacity-100"
+                style={{ minHeight: 'auto' }}
+              >
+                <Link2 className="w-3.5 h-3.5 text-primary" /> Vídeo indisponível? Alterar Link
               </button>
 
               <p className="text-[11px] text-color-text-muted max-w-xs leading-normal">
