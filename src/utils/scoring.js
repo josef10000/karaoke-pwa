@@ -5,7 +5,7 @@
 
 // Compara a nota cantada com a nota alvo da música
 // Retorna um objeto indicando se foi 'perfect', 'good' ou 'miss'
-export function evaluatePitch(sungNote, targetNote, toleranceSemitones = 1.2) {
+export function evaluatePitch(sungNote, targetNote, toleranceSemitones = 1.5) {
   if (sungNote < 0 || targetNote < 0) {
     return { rating: 'miss', points: 0 };
   }

@@ -200,12 +200,13 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   const audioStreamRef = useRef(null);
   const thresholdRef = useRef(threshold);
   const selectedAudioDeviceRef = useRef(selectedAudioDevice);
+  const stabilityRef = useRef({ lastNote: -1, count: 0 });
 
   // Notas musicais customizadas carregadas do Firebase (colaborativas)
   const [customSongNotes, setCustomSongNotes] = useState(null);
 
-  // Notas musicais da música ativa (seja da demo, customizada do Firebase ou USDB)
-  const songData = customSongNotes || (song.hasDemo ? demoSongsNotes[song.id] : song);
+  // Notas musicais da música ativa (sempre prioriza a demo estática nativa perfeita, se houver)
+  const songData = song.hasDemo ? demoSongsNotes[song.id] : (customSongNotes || song);
   const hasTargetNotes = songData && songData.notes && songData.notes.length > 0;
 
   // Busca se existe mapeamento de notas musicais (USDB/UltraStar) no Firebase ou em bases públicas de UltraStar
@@ -424,11 +425,29 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         setFeedback({ text: '', color: 'transparent' });
       }
     } else {
-      // Modo Livre (Free-Sing): acumula pontos por manter a voz ativa e firme
-      if (!hasTargetNotes && data.rms > thresholdRef.current) {
-        setScore((prev) => prev + 15);
-        setFeedback({ text: 'SOPRANDO A VOZ!', color: 'var(--color-secondary)' });
+      // Modo Livre (Free-Sing): acumula pontos por manter a voz ativa, firme e estável (evitando ruídos/sopros)
+      if (!hasTargetNotes && data.rms > thresholdRef.current && data.midiNote > 0) {
+        const last = stabilityRef.current.lastNote;
+        const diff = Math.abs(data.midiNote - last);
+        
+        if (last > 0 && diff <= 1.2) {
+          stabilityRef.current.count += 1;
+        } else {
+          stabilityRef.current.count = 0;
+        }
+        stabilityRef.current.lastNote = data.midiNote;
+
+        // Exige pelo menos 3 frames consecutivos de estabilidade (~150ms) para começar a pontuar
+        if (stabilityRef.current.count >= 3) {
+          setScore((prev) => prev + 15);
+          setFeedback({ text: 'AFINADO E ESTÁVEL!', color: 'var(--color-secondary)' });
+          createPerfectParticle();
+        } else {
+          setFeedback({ text: '', color: 'transparent' });
+        }
       } else {
+        stabilityRef.current.count = 0;
+        stabilityRef.current.lastNote = -1;
         if (data.midiNote === -1) {
           setFeedback({ text: '', color: 'transparent' });
         }
