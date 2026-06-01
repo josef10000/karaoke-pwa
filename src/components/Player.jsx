@@ -321,7 +321,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
     loadAudioDevices();
   }, []);
 
-  // Inicializa o Player do YouTube
+  // Inicializa o Player do YouTube (sempre destrói e recria quando o ID do vídeo ou a música mudar, garantindo recuperação robusta de erros)
   useEffect(() => {
     const initPlayer = () => {
       if (ytPlayerRef.current) {
@@ -366,19 +366,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         try { ytPlayerRef.current.destroy(); } catch (e) {}
       }
     };
-  }, [song]);
-
-  // Sincroniza dinamicamente o link/ID do YouTube sem reconstruir o player do zero (ultra-estável!)
-  useEffect(() => {
-    if (ytPlayerRef.current && typeof ytPlayerRef.current.cueVideoById === 'function') {
-      try {
-        console.log(`📡 Sincronizando playback no player ativo: ${activeYoutubeId}`);
-        ytPlayerRef.current.cueVideoById(activeYoutubeId);
-      } catch (e) {
-        console.warn("Falha ao usar cueVideoById no player ativo, recriando o player.");
-      }
-    }
-  }, [activeYoutubeId]);
+  }, [song, activeYoutubeId]);
 
 
 
@@ -422,6 +410,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
 
   // Processador e avaliador do tom de voz em tempo real
   const handleAudioProcess = (data) => {
+    if (!isPlaying) return; // Salvaguarda absoluta: impede processamento e pontuação se o player estiver pausado ou não iniciado
     setVoiceData(data);
 
     if (hasTargetNotes && activeNote && data.midiNote > 0) {
