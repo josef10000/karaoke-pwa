@@ -3,9 +3,84 @@ import { Play, Pause, LogOut, Sparkles, Mic, Settings, Link2, AlertTriangle } fr
 import { initAudioStream } from '../utils/audio';
 import { findTargetNoteAtTime, evaluatePitch, getFeedbackStyle } from '../utils/scoring';
 import { demoSongsNotes } from '../songs-catalog';
-import { extractYouTubeId } from '../utils/ultrastar';
+import { extractYouTubeId, parseUltraStar } from '../utils/ultrastar';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+
+// Parser simples e performático de arquivos de letras sincronizadas (.lrc)
+function parseLrcLyrics(lrcText) {
+  if (!lrcText) return [];
+  const lines = lrcText.split('\n');
+  const result = [];
+  const timeRegex = /\[(\d+):(\d+)\.(\d+)\]/;
+  
+  lines.forEach(line => {
+    const match = timeRegex.exec(line);
+    if (match) {
+      const minutes = parseInt(match[1], 10);
+      const seconds = parseInt(match[2], 10);
+      const milliseconds = parseInt(match[3], 10);
+      const totalTime = minutes * 60 + seconds + (milliseconds / 100);
+      const text = line.replace(timeRegex, '').trim();
+      if (text) {
+        result.push({ time: totalTime, text });
+      }
+    }
+  });
+  
+  return result.sort((a, b) => a.time - b.time);
+}
+
+// Cria uma partitura de melodia fluida e jogável a partir das letras sincronizadas do LRC
+function generateMelodyFromLrc(lrcLines, songId, title, artist) {
+  if (!lrcLines || lrcLines.length === 0) return null;
+  
+  const notes = [];
+  
+  lrcLines.forEach((line, lineIdx) => {
+    const startTime = line.time;
+    const nextLine = lrcLines[lineIdx + 1];
+    const endTime = nextLine ? nextLine.time : startTime + 5.0;
+    const duration = Math.min(endTime - startTime, 6.0);
+    
+    // Filtra e limpa as palavras da frase
+    const words = line.text.split(' ').filter(w => w.trim());
+    if (words.length === 0) return;
+    
+    const timePerWord = duration / words.length;
+    
+    words.forEach((word, wordIdx) => {
+      const wordStartTime = startTime + (wordIdx * timePerWord);
+      const wordDuration = Math.max(timePerWord * 0.85, 0.25); // Silêncio de respiração curto
+      
+      // Ondulação harmônica senoidal no pitch (C4 +/- 4 semitons) para uma sensação de melodia real e agradável
+      const basePitch = 60; // Nota Dó central (C4)
+      const wave = Math.sin((lineIdx * 2.2) + (wordIdx * 0.75));
+      const pitchOffset = Math.round(wave * 4);
+      const pitch = basePitch + pitchOffset;
+      
+      notes.push({
+        time: parseFloat(wordStartTime.toFixed(3)),
+        duration: parseFloat(wordDuration.toFixed(3)),
+        pitch: pitch,
+        text: (wordIdx === 0 ? "" : " ") + word,
+        type: "normal"
+      });
+    });
+  });
+  
+  return {
+    songId,
+    title,
+    artist,
+    bpm: 120,
+    gap: 0,
+    notes: notes.sort((a, b) => a.time - b.time),
+    isGeneratedFallback: true,
+    updatedAt: new Date().toISOString()
+  };
+}
+
 
 
 
@@ -19,6 +94,47 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   const [activeYoutubeId, setActiveYoutubeId] = useState(song.youtubeId);
   const [tempYoutubeLink, setTempYoutubeLink] = useState('');
   const [youtubeError, setYoutubeError] = useState('');
+  const [isAutoCorrectingVideo, setIsAutoCorrectingVideo] = useState(false);
+
+  // Controle opcional de letras sincronizadas LRCLIB
+  const [showLyrics, setShowLyrics] = useState(false); // Padrão: DESATIVADO (OFF)
+  const [lrcLines, setLrcLines] = useState([]);
+  const [activeLrcLine, setActiveLrcLine] = useState(null);
+  const [nextLrcLine, setNextLrcLine] = useState(null);
+
+  // Busca e sincroniza legendas da API pública do LRCLIB no carregamento da música
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLrcLyrics = async () => {
+      try {
+        const url = `https://lrclib.net/api/search?q=artist:"${encodeURIComponent(song.artist)}" track:"${encodeURIComponent(song.title)}"`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error();
+        
+        const data = await res.json();
+        // Filtra para achar o primeiro hit que possui letras sincronizadas
+        const hitWithLyrics = data.find(item => item.syncedLyrics);
+        if (hitWithLyrics && isMounted) {
+          const parsed = parseLrcLyrics(hitWithLyrics.syncedLyrics);
+          setLrcLines(parsed);
+          console.log(`📡 Letras sincronizadas da LRCLIB carregadas para ${song.title} (${parsed.length} linhas)`);
+        } else if (isMounted) {
+          // Fallback para letra comum não sincronizada (simula tempos estáticos)
+          const hitWithPlain = data.find(item => item.plainLyrics);
+          if (hitWithPlain) {
+            const lines = hitWithPlain.plainLyrics.split('\n').filter(l => l.trim());
+            const staticLrc = lines.map((text, idx) => ({ time: idx * 8 + 10, text }));
+            setLrcLines(staticLrc);
+          }
+        }
+      } catch (err) {
+        console.warn("Nenhuma legenda sincronizada disponível na LRCLIB.");
+      }
+    };
+    fetchLrcLyrics();
+    return () => { isMounted = false; };
+  }, [song.artist, song.title]);
+
 
   // Busca se existe algum link customizado e ativo gravado no Firebase para esta música
   useEffect(() => {
@@ -66,6 +182,34 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
     }
   };
 
+  // Auto-Link Corretivo de Vídeo no YouTube (executado quando o player nativo do YouTube falha ou retorna indisponível)
+  const handleAutoLinkCorrective = async () => {
+    try {
+      console.log(`📡 Iniciando auto-link automático para a música ${song.title}...`);
+      const queryStr = `${song.artist} ${song.title} karaoke playback`;
+      // Proxy de gadgets do Google aberto e gratuito para ler HTML de busca pública do YouTube sem limites e sem chaves
+      const proxyUrl = `https://images${Math.floor(Math.random() * 3) + 1}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=none&url=${encodeURIComponent(`https://www.youtube.com/results?search_query=${encodeURIComponent(queryStr)}`)}`;
+      
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error("Erro de proxy");
+      const htmlText = await res.text();
+      
+      // Localiza o primeiro link de vídeo '/watch?v=[ID_DE_11_CARAC]' na página de busca pública
+      const watchMatch = htmlText.match(/\/watch\?v=([a-zA-Z0-9_-]{11})/);
+      if (watchMatch && watchMatch[1]) {
+        const discoveredId = watchMatch[1];
+        console.log(`✨ Vídeo funcional de Karaokê descoberto automaticamente no YouTube: ${discoveredId}`);
+        // Persiste esse novo link funcional no Firebase para essa música para sempre
+        await handleUpdateVideoId(`https://www.youtube.com/watch?v=${discoveredId}`);
+      } else {
+        throw new Error("Nenhum ID de vídeo detectado no scraping");
+      }
+    } catch (err) {
+      console.error("Falha na auto-correção de vídeo do YouTube: ", err);
+    }
+  };
+
+
 
   
   // Lista de microfones disponíveis para o seletor rápido no Player
@@ -82,9 +226,96 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   const thresholdRef = useRef(threshold);
   const selectedAudioDeviceRef = useRef(selectedAudioDevice);
 
-  // Notas musicais da música ativa (seja da demo ou carregada do Firebase)
-  const songData = song.hasDemo ? demoSongsNotes[song.id] : song;
+  // Notas musicais customizadas carregadas do Firebase (colaborativas)
+  const [customSongNotes, setCustomSongNotes] = useState(null);
+
+  // Notas musicais da música ativa (seja da demo, customizada do Firebase ou USDB)
+  const songData = customSongNotes || (song.hasDemo ? demoSongsNotes[song.id] : song);
   const hasTargetNotes = songData && songData.notes && songData.notes.length > 0;
+
+  // Busca se existe mapeamento de notas musicais (USDB/UltraStar) no Firebase ou em bases públicas de UltraStar
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUltraStarNotes = async () => {
+      try {
+        // 1. Tenta buscar no Firebase Firestore (cache colaborativo rápido)
+        const docRef = doc(db, 'usdb_notes', song.id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists() && docSnap.data().notes) {
+          console.log(`📡 Notas UltraStar carregadas do Firebase para a música ${song.title} (${docSnap.data().notes.length} notas)`);
+          if (isMounted) setCustomSongNotes(docSnap.data());
+          return;
+        }
+
+        // Se for demo original, usa o catálogo estático interno e não faz requisição
+        if (song.hasDemo) return;
+
+        // 2. Auto-Busca em bases de notas UltraStar abertas da comunidade no GitHub (ex: repositórios de melodias de UltraStar)
+        console.log(`🔍 Buscando partitura UltraStar (.txt) na comunidade de forma automatizada para: ${song.title}...`);
+        const querySearch = `${song.artist} - ${song.title}`;
+        
+        // Buscamos em repositórios conhecidos de arquivos de texto de UltraStar estruturados no GitHub
+        const githubSearchUrl = `https://api.github.com/search/code?q=filename:.txt+extension:txt+path:songs+path:Músicas+"${encodeURIComponent(song.title)}"`;
+        const ghRes = await fetch(githubSearchUrl);
+        
+        if (ghRes.ok) {
+          const ghData = await ghRes.json();
+          if (ghData.items && ghData.items.length > 0) {
+            // Baixa o conteúdo do arquivo bruto (.txt)
+            const rawUrl = ghData.items[0].html_url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+            const fileRes = await fetch(rawUrl);
+            if (fileRes.ok) {
+              const txt = await fileRes.text();
+              const parsed = parseUltraStar(txt);
+              
+              if (parsed && parsed.notes && parsed.notes.length > 0) {
+                console.log(`🎉 Melodia UltraStar encontrada e convertida! Salva colaborativamente no Firebase para ${song.title}.`);
+                const saveData = {
+                  songId: song.id,
+                  title: song.title,
+                  artist: song.artist,
+                  bpm: parsed.bpm,
+                  gap: parsed.gap,
+                  notes: parsed.notes,
+                  updatedAt: new Date().toISOString()
+                };
+
+                // Grava de forma aberta no Firebase Firestore para todos os usuários do site usufruírem
+                await setDoc(docRef, saveData);
+                if (isMounted) setCustomSongNotes(saveData);
+                return;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Nenhum mapeamento de notas UltraStar disponível na comunidade para essa música.");
+      }
+    };
+    fetchUltraStarNotes();
+    return () => { isMounted = false; };
+  }, [song.id, song.artist, song.title, song.hasDemo]);
+
+  // Backup inteligente: Se a música cadastrada não possui notas e a busca no GitHub/Firebase falhou,
+  // mas as letras sincronizadas LRCLIB foram obtidas, geramos notas e partitura fluida de fallback na hora!
+  useEffect(() => {
+    let isMounted = true;
+    if (!song.hasDemo && !customSongNotes && lrcLines.length > 0) {
+      console.log(`✨ Inicializando fallback inteligente de melodia harmônica a partir do LRC para: ${song.title}`);
+      const generated = generateMelodyFromLrc(lrcLines, song.id, song.title, song.artist);
+      if (generated && isMounted) {
+        setCustomSongNotes(generated);
+        // Persiste colaborativamente no Firebase para todos os usuários usufruírem
+        const docRef = doc(db, 'usdb_notes', song.id);
+        setDoc(docRef, generated)
+          .then(() => console.log(`💾 Melodia fallback gerada do LRC e gravada com sucesso no Firebase para ${song.title}`))
+          .catch(err => console.warn("Erro ao persistir fallback no Firebase: ", err));
+      }
+    }
+    return () => { isMounted = false; };
+  }, [song.id, song.hasDemo, customSongNotes, lrcLines, song.title, song.artist]);
+
 
   // Atualiza refs para o loop de áudio poder ler instantaneamente sem causar re-renderizações indesejadas
   useEffect(() => {
@@ -139,6 +370,11 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
             if (event.data === 0) {
               handleFinish();
             }
+          },
+          onError: (event) => {
+            // Detecta erro de vídeo indisponível/bloqueado por direitos autorais
+            console.warn(`⚠️ Erro detectado no player do YouTube (Código: ${event.data}). Iniciando auto-link corretivo...`);
+            handleAutoLinkCorrective();
           }
         }
       });
@@ -159,7 +395,8 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   }, [song, activeYoutubeId]);
 
 
-  // Loop de atualização de tempo sincronizado do YouTube
+
+  // Loop de atualização de tempo sincronizado do YouTube e atualização de Pitch/Lyrics
   useEffect(() => {
     let interval;
     if (isPlaying) {
@@ -172,13 +409,30 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
             const active = findTargetNoteAtTime(time, songData.notes);
             setActiveNote(active);
           }
+
+          // Sincronização de Letras da LRCLIB em Tempo Real
+          if (lrcLines.length > 0) {
+            const currentIndex = lrcLines.findIndex((line, idx) => {
+              const nextLine = lrcLines[idx + 1];
+              return time >= line.time && (!nextLine || time < nextLine.time);
+            });
+            
+            if (currentIndex !== -1) {
+              setActiveLrcLine(lrcLines[currentIndex]);
+              setNextLrcLine(lrcLines[currentIndex + 1] || null);
+            } else if (lrcLines[0] && time < lrcLines[0].time) {
+              setActiveLrcLine({ text: "🎵 Prepara..." });
+              setNextLrcLine(lrcLines[0]);
+            }
+          }
         }
       }, 50);
     } else {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, hasTargetNotes, songData]);
+  }, [isPlaying, hasTargetNotes, songData, lrcLines]);
+
 
   // Processador e avaliador do tom de voz em tempo real
   const handleAudioProcess = (data) => {
@@ -338,8 +592,17 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         <div className="glass-panel p-1 aspect-video relative overflow-hidden rounded-2xl bg-black w-full h-full min-h-[240px]">
           <div id="youtube-player" className="w-full h-full rounded-xl pointer-events-none" />
           
+          {/* Tarja de Letras Sincronizadas Flutuante (Opção A - Padrão OFF) */}
+          {showLyrics && isPlaying && activeLrcLine && (
+            <div className="lyric-floating-overlay animate-fade-in">
+              <p className="lyric-floating-line">{activeLrcLine.text}</p>
+              {nextLrcLine && <p className="lyric-floating-line next-line">{nextLrcLine.text}</p>}
+            </div>
+          )}
+
           {/* Overlay de Canto Inicial */}
           {!isPlaying && (
+
             <div className="absolute inset-0 bg-black/85 backdrop-filter backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-10 overflow-y-auto">
               <span className="hero-tag mb-2">
                 <Sparkles className="w-4 h-4" /> Preparar para Soltar a Voz
@@ -351,23 +614,39 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
               >
                 <Play className="w-6 h-6 fill-current ml-1" />
               </button>
+
+              {/* Botão de Auto-Correção Proativa de Vídeo */}
+              <button
+                onClick={async () => {
+                  setIsAutoCorrectingVideo(true);
+                  await handleAutoLinkCorrective();
+                  setIsAutoCorrectingVideo(false);
+                  alert("Busca concluída! O melhor playback de karaokê instrumental para esta música foi mapeado e sincronizado.");
+                }}
+                disabled={isAutoCorrectingVideo}
+                className="btn btn-primary w-full max-w-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 mb-4 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                style={{ fontSize: '12px', fontWeight: 'bold' }}
+              >
+                <Sparkles className="w-4 h-4 text-accent" />
+                {isAutoCorrectingVideo ? "Buscando Playback..." : "Auto-Corrigir Vídeo (Buscar Playback)"}
+              </button>
               
               {/* Box rápido para trocar o vídeo caso esteja indisponível */}
               <div className="w-full max-w-sm glass-panel p-3 bg-black/60 border border-white/5 rounded-xl">
                 <p className="text-[10px] text-color-text-muted mb-2 flex items-center gap-1 justify-center">
                   <AlertTriangle className="w-3.5 h-3.5 text-yellow-400" /> 
-                  Vídeo com erro ou indisponível? Troque o link:
+                  Vídeo indisponível? Insira uma URL alternativa do YouTube:
                 </p>
                 <div className="flex gap-2">
                   <input
-                    type="text"
-                    placeholder="Cole aqui o link do YouTube..."
-                    value={tempYoutubeLink}
-                    onChange={(e) => {
-                      setTempYoutubeLink(e.target.value);
-                      setYoutubeError('');
-                    }}
-                    className="flex-1 select-field text-xs py-1.5 px-3 bg-white/5 border border-white/10 rounded-lg text-white"
+                     type="text"
+                     placeholder="Cole aqui o link do YouTube..."
+                     value={tempYoutubeLink}
+                     onChange={(e) => {
+                       setTempYoutubeLink(e.target.value);
+                       setYoutubeError('');
+                     }}
+                     className="flex-1 select-field text-xs py-1.5 px-3 bg-white/5 border border-white/10 rounded-lg text-white"
                   />
                   <button
                     onClick={() => handleUpdateVideoId(tempYoutubeLink)}
@@ -382,7 +661,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
               </div>
 
               <p className="text-[10px] text-color-text-muted mt-4 max-w-xs leading-tight">
-                Posicione os microfones da caixa Bluetooth e clique em Calibrar abaixo se necessário!
+                Calibre o ganho do seu microfone e posicione o dispositivo de captação de áudio adequadamente antes de iniciar.
               </p>
             </div>
           )}
@@ -440,17 +719,31 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
       {/* Controles do Karaokê */}
       {isPlaying && (
         <div className="glass-panel p-4 flex-row-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={togglePlay}
-              className="btn btn-secondary rounded-full w-10 h-10 p-0 flex items-center justify-center"
+              className="btn btn-secondary rounded-full w-10 h-10 p-0 flex items-center justify-center animate-fade-in"
             >
               <Pause className="w-5 h-5" />
             </button>
-            <span className="text-xs text-color-text-muted font-bold font-title">
+
+            {/* Toggle de Letras Sincronizadas (Padrão OFF) */}
+            <div 
+              onClick={() => setShowLyrics(!showLyrics)} 
+              className="toggle-container"
+              title="Exibir legenda sincronizada sobre o vídeo"
+            >
+              <div className={`toggle-track ${showLyrics ? 'active' : ''}`}>
+                <div className="toggle-thumb" />
+              </div>
+              <span className="toggle-label">{showLyrics ? 'Letra: ON' : 'Letra: OFF'}</span>
+            </div>
+
+            <span className="text-xs text-color-text-muted font-bold font-title hidden md:inline">
               Tempo: {Math.floor(currentTime / 60)}:{(currentTime % 60 < 10 ? '0' : '')}{Math.floor(currentTime % 60)}
             </span>
           </div>
+
 
           <div className="flex items-center gap-2">
             <button

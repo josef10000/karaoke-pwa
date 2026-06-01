@@ -4,6 +4,75 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { songsCatalog } from '../songs-catalog';
 
+// Cache global em memória para as capas de álbuns para evitar limites de taxa de chamadas
+const albumCoversCache = {};
+
+// Função auxiliar para gerar um gradiente neon em SVG caso o Deezer falhe ou dê CORS
+function generateNeonPlaceholder(title, artist) {
+  const initials = ((title?.[0] || '') + (artist?.[0] || '')).toUpperCase();
+  const hash = [...(title + artist)].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  // Cores neon vibrantes de acordo com o Design System Cyber-Neon
+  const colors = [
+    { start: '#9333ea', end: '#06b6d4' }, // Roxo -> Azul Glacial
+    { start: '#ec4899', end: '#9333ea' }, // Magenta -> Roxo
+    { start: '#06b6d4', end: '#10b981' }, // Azul -> Verde Neon
+    { start: '#f59e0b', end: '#ec4899' }  // Amarelo -> Rosa Accent
+  ];
+  
+  const gradient = colors[hash % colors.length];
+  
+  // Retorna o SVG embutido como data-uri
+  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${encodeURIComponent(gradient.start)}"/><stop offset="100%" stop-color="${encodeURIComponent(gradient.end)}"/></linearGradient></defs><rect width="100" height="100" fill="url(%23g)"/><circle cx="50" cy="50" r="30" fill="black" fill-opacity="0.15"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="900" font-size="28" fill="white" fill-opacity="0.95">${initials}</text></svg>`;
+}
+
+// Componente para renderizar capas inteligentes do Deezer
+function AlbumCover({ title, artist }) {
+  const cacheKey = `${artist}-${title}`;
+  const [coverUrl, setCoverUrl] = useState(albumCoversCache[cacheKey] || null);
+
+  useEffect(() => {
+    if (coverUrl) return;
+
+    let isMounted = true;
+    const fetchCover = async () => {
+      try {
+        // Deezer API com codificação de URI
+        const url = `https://api.deezer.com/search?q=track:"${encodeURIComponent(title)}" artist:"${encodeURIComponent(artist)}"`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error();
+        
+        const data = await res.json();
+        if (data.data && data.data.length > 0 && data.data[0].album?.cover_medium) {
+          const imgUrl = data.data[0].album.cover_medium;
+          albumCoversCache[cacheKey] = imgUrl;
+          if (isMounted) setCoverUrl(imgUrl);
+        } else {
+          throw new Error('Deezer vazio');
+        }
+      } catch (err) {
+        // Fallback robusto e lindo em SVG
+        const fallback = generateNeonPlaceholder(title, artist);
+        albumCoversCache[cacheKey] = fallback;
+        if (isMounted) setCoverUrl(fallback);
+      }
+    };
+
+    fetchCover();
+    return () => { isMounted = false; };
+  }, [title, artist, coverUrl, cacheKey]);
+
+  return (
+    <img 
+      src={coverUrl || generateNeonPlaceholder(title, artist)} 
+      alt="Capa" 
+      className="song-card-album"
+      loading="lazy"
+    />
+  );
+}
+
+
 export default function Home({ onSelectSong, onNavigateToImport }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
@@ -57,7 +126,7 @@ export default function Home({ onSelectSong, onNavigateToImport }) {
       <div className="glass-panel hero-banner">
         <div className="hero-tag">
           <Sparkles className="w-4 h-4" />
-          <span>PWA de Karaokê com Pontuação</span>
+          <span>Plataforma Profissional de Karaokê</span>
         </div>
         
         <h1 className="hero-title">
@@ -66,7 +135,7 @@ export default function Home({ onSelectSong, onNavigateToImport }) {
         </h1>
         
         <p className="hero-desc">
-          Cante no computador ou celular conectado na sua caixa de som! Sistema de pontos em tempo real por pitch e suporte ao formato UltraStar Deluxe.
+          Solte a sua voz com alta fidelidade de captação, sistema profissional de pontuação em tempo real por pitch e biblioteca integrada de melodias e letras sincronizadas.
         </p>
       </div>
 
@@ -138,6 +207,9 @@ export default function Home({ onSelectSong, onNavigateToImport }) {
               key={song.id}
               className="glass-panel glass-panel-hover song-card"
             >
+              {/* Capa de Álbum Premium Deezer/Neon */}
+              <AlbumCover title={song.title} artist={song.artist} />
+              
               <div className="song-card-details">
                 <h3 className="song-card-title">{song.title}</h3>
                 <p className="song-card-artist">{song.artist}</p>

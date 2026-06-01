@@ -107,10 +107,10 @@ export default function Import({ onNavigateHome }) {
 
       <div className="glass-panel p-8">
         <h2 className="text-3xl font-bold font-title mb-2 text-white flex items-center gap-3">
-          <Upload className="text-primary w-8 h-8" /> Importar Música do UltraStar Deluxe
+          <Upload className="text-primary w-8 h-8" /> Importar Partitura UltraStar Deluxe
         </h2>
         <p className="text-color-text-muted text-sm mb-6">
-          Faça upload de arquivos `.txt` no formato do UltraStar Deluxe. O sistema interpretará as letras e notas de pitch e as salvará no seu banco de dados Firebase para que todos possam cantar no site com pontuação em tempo real.
+          Faça upload de arquivos `.txt` no padrão UltraStar Deluxe. A plataforma interpretará as letras e notas de pitch e as salvará no banco de dados Cloud Firestore para sincronização imediata com pontuação em tempo real.
         </p>
 
         {/* Zona de Drop de Arquivo */}
@@ -175,7 +175,7 @@ export default function Import({ onNavigateHome }) {
                 className="input-field"
               />
               <span className="text-xs text-color-text-muted mt-2">
-                O arquivo UltraStar precisa de um vídeo do YouTube associado para tocar no player do site. Cole a URL do karaokê correspondente acima.
+                A partitura UltraStar necessita de um vídeo de playback do YouTube associado para execução na plataforma. Insira a URL correspondente no campo acima.
               </span>
             </div>
 

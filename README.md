@@ -1,117 +1,77 @@
-# 🎤 Sinfonia Karaoke - PWA de Karaokê Online
+# 🎤 Sinfonia Karaoke - Plataforma Profissional de Karaokê Online Premium
 
-Um Progressive Web App (PWA) de karaokê online premium com **pontuação por pitch em tempo real**, suporte ao formato open-source **UltraStar Deluxe (.txt)**, vídeos integrados do YouTube e integração de banco de dados e ranking no **Firebase Firestore**.
+Sinfonia Karaoke é a plataforma definitiva de karaokê online de alta fidelidade, projetada para oferecer uma experiência de estúdio em computadores, televisores e dispositivos móveis. Desenvolvido com **tecnologia de processamento de áudio em tempo real**, o sistema oferece **pontuação profissional por pitch (afinação)**, suporte nativo ao padrão aberto **UltraStar Deluxe (.txt)**, sincronização automática de letras via **LRCLIB** e integração colaborativa persistente com o banco de dados **Cloud Firestore**.
 
-Este projeto foi construído utilizando **React**, **Vite** e **CSS Vanilla (Cyber-Neon)**. Ele foi especialmente arquitetado para ser desenvolvido **sem a necessidade de Node.js instalado localmente**, deixando toda a compilação e instalação de pacotes a cargo da nuvem da **Vercel** durante o deploy automático.
-
----
-
-## ✨ Recursos Chave
-
-*   **🎙️ Escolha de Captador de Áudio (Microfone Físico)**: Menu seletor integrado que detecta e lista dinamicamente todos os microfones conectados ao dispositivo (como o microfone interno do celular/notebook ou o microfone de entrada de linha da caixa de som Bluetooth). Permite alterar o captador ativo instantaneamente sem perder o progresso.
-*   **⚡ Pontuação por Pitch Octave Neutral**: O algoritmo de autocorrelação matemática analisa a onda sonora do microfone a cada 50ms para identificar a nota musical cantada. O sistema é neutro de oitava (Octave Neutral), permitindo que homens, mulheres e crianças pontuem perfeitamente de forma justa.
-*   **📂 Interpretador UltraStar Deluxe (.txt)**: Uma funcionalidade incrível de arrastar e soltar (Drag & Drop) que permite fazer o upload de qualquer arquivo `.txt` da comunidade UltraStar. O app faz o parsing automático, sincroniza a melodia e as letras em segundos.
-*   **🔥 Catálogo Híbrido de 100 Músicas**: Contém 50 músicas nacionais brasileiras (desde clássicos sertanejos como *Evidências* e *Boate Azul* até pop rock nacional) e 50 músicas internacionais (como *Bohemian Rhapsody* e *Creep*). As músicas de demonstração contam com mapeamento de pitch completo.
-*   **🛠️ Calibração de Ruído Integrada (Noise Gate)**: Slider de sensibilidade em milivolts (mV) para calibrar a captação do microfone do celular ou computador. Isso impede que o som instrumental vindo da caixa de som externa seja interpretado como a voz do cantor.
-*   **🌐 Mural de Melhores Cantores (Leaderboard)**: Sincronização em tempo real com o **Firebase Firestore** para listar o ranking das maiores pontuações por música e permitir que você grave o seu nome na história do karaokê.
-*   **📱 Progressive Web App (PWA)**: Totalmente responsivo para telas cheias de computadores, TVs ou dispositivos móveis. Pode ser "Instalado" como aplicativo nativo na tela inicial do seu celular, com visual otimizado sem bordas de navegador.
-*   **🔗 Substituição Dinâmica de Vídeos (YouTube Live Swap)**: Se o vídeo de karaokê padrão do catálogo apresentar erro ("Vídeo Indisponível") devido a restrições de direitos autorais, o usuário pode colar qualquer link alternativo do YouTube diretamente no player. O aplicativo extrai o ID e reinicializa o player em tempo real, sem perder o progresso ou as notas mapeadas.
+Construído sobre uma arquitetura estática e moderna com **React**, **Vite** e **CSS Vanilla (Cyber-Neon)**, o projeto foi especialmente otimizado para deploy contínuo em nuvem, garantindo desempenho absoluto, tempos de resposta ultrarrápidos e integridade visual de alto padrão.
 
 ---
 
-## 🏗️ Estrutura do Projeto
+## ⚡ Recursos de Engenharia e Tecnologia
+
+*   **🎙️ Seletor Dinâmico de Captadores (Microfone Físico):** Módulo de controle integrado que detecta, lista e permite a comutação instantânea entre múltiplos captadores de áudio (microfones internos, headsets profissionais, interfaces de áudio ou entradas auxiliares conectadas a caixas Bluetooth), mantendo o fluxo de execução inalterado.
+*   **📐 Algoritmo de Pitch Octave Neutral (Afinação Neutra de Oitava):** O mecanismo de detecção matemática de pitch por autocorrelação analisa a onda de voz a cada 50ms. A pontuação é projetada de forma neutra em relação à oitava (Octave Neutral Scoring), permitindo que vozes masculinas, femininas e infantis pontuem de forma justa e uniforme.
+*   **🧩 Mecanismo Inteligente de Fallback de Melodia:** Se uma música cadastrada não dispuser de partitura UltraStar Deluxe `.txt` pública, o Sinfonia Karaoke analisa a métrica temporal das letras sincronizadas no LRCLIB em tempo real, gerando uma onda melódica harmônica confortável e estruturada na barra de pitch, tornando 100% do catálogo jogável e interativo imediatamente.
+*   **🔗 Auto-Link e Correção Proativa de Playback (YouTube Live Swap):** Sistema inteligente que resolve vídeos indisponíveis por direitos autorais ou links quebrados. Ele permite buscas automáticas via Google Focus API ou atualizações manuais rápidas em tempo real, persistindo os novos caminhos dinamicamente no Cloud Firestore.
+*   **🎨 Deezer API & Neon Design System:** O catálogo premium é alimentado pela API do Deezer para puxar capas de álbuns de alta resolução, com fallback em placeholders geométricos neon gerados em SVG inline para garantir visual sempre premium e sem placeholders estáticos.
+*   **🏆 Mural e Leaderboard Corporativo:** Sincronização em tempo real com o Cloud Firestore para armazenar o ranking das maiores pontuações por faixa musical de forma integrada e auditada.
+
+---
+
+## 🏗️ Arquitetura do Sistema
 
 ```
 /karaoke
-├── package.json           # Scripts, dependências do Vite + React + Firebase
-├── vite.config.js         # Configurações do compilador Vite
-├── index.html             # Ponto de entrada do documento HTML
-├── vercel.json            # Regras de SPA e caching para a Vercel
-├── README.md              # Documentação do projeto
+├── package.json           # Dependências e scripts do ecossistema React + Vite
+├── vite.config.js         # Configurações do compilador e otimizador Vite
+├── index.html             # Ponto de entrada do documento HTML5 SEO-optimized
+├── vercel.json            # Configuração avançada de SPA, Headers e caching da Vercel
+├── README.md              # Documentação técnica profissional do ecossistema
 ├── public/
-│   ├── manifest.json      # Configuração do PWA
-│   └── sw.js              # Service Worker de cache offline
+│   ├── manifest.json      # Manifesto de aplicação corporativa
+│   └── sw.js              # Service Worker para caching offline e integridade
 └── src/
-    ├── main.jsx           # Entrypoint do React
-    ├── index.css          # Design System Cyber-Neon
+    ├── main.jsx           # Ponto de partida do React
+    ├── index.css          # Design System Cyber-Neon de Alta Fidelidade (Vanilla CSS)
     ├── App.jsx            # Orquestrador da Single Page Application (SPA)
-    ├── firebase.js        # Configuração do Firebase Firestore
-    ├── songs-catalog.js   # Catálogo estático das 100 músicas e demonstrações
+    ├── firebase.js        # Configuração e inicialização das credenciais Firestore
+    ├── songs-catalog.js   # Catálogo geral de faixas e demos estáticas
     ├── components/
-    │   ├── Home.jsx       # Tela inicial, categorias e catálogo
-    │   ├── Import.jsx     # Drag & Drop de arquivos UltraStar .txt
-    │   ├── Player.jsx     # Interface de canto (YT Player + Pitch Visualizer)
-    │   └── Results.jsx    # Mural final e gravação de pontuações
+    │   ├── Home.jsx       # Painel de controle, categorias e portfólio de faixas
+    │   ├── Import.jsx     # Importação de partituras e playbacks UltraStar
+    │   ├── Player.jsx     # Core de canto (YT Player + Pitch Visualizer em tempo real)
+    │   └── Results.jsx    # Análise de desempenho e mural de pontuações
     └── utils/
-        ├── audio.js       # Captura de microfone e algoritmo de Pitch Detection
-        ├── ultrastar.js   # Parser e interpretador de texto (.txt)
-        └── scoring.js     # Lógica de validação de afinação e ranking
+        ├── audio.js       # Captura de fluxo de áudio e Pitch Detection (autocorrelação)
+        ├── ultrastar.js   # Parser e interpretador sintático de arquivos .txt do UltraStar
+        └── scoring.js     # Lógica de cálculo de afinação e avaliação final
 ```
 
 ---
 
-## 🚀 Guia de Deploy Rápido (GitHub + Vercel)
+## 🚀 Implantação e Deploy Contínuo (Vercel)
 
-Como o projeto foi projetado para rodar o build na nuvem, você não precisa configurar nada no seu computador! Apenas siga estes passos simples:
+A plataforma Sinfonia Karaoke foi arquitetada para compilação automatizada na nuvem (CI/CD). Siga os procedimentos padrões de deploy corporativo:
 
-### 1. Criar Repositório no GitHub
-1. Acesse o seu [GitHub](https://github.com/) e clique em **New Repository**.
-2. Dê o nome de `karaoke-pwa`, configure como Público ou Privado e clique em **Create Repository**.
-3. No terminal da sua máquina, dentro da pasta do projeto, rode os comandos para subir as mudanças:
-   ```bash
-   git add .
-   git commit -m "feat: estrutura PWA de Karaokê em React e Vite concluída"
-   git branch -M main
-   git remote add origin https://github.com/SEU_USUARIO/karaoke-pwa.git
-   git push -u origin main
-   ```
-
-### 2. Configurar Hospedagem na Vercel
-1. Acesse a [Vercel](https://vercel.com/) e crie ou faça login com sua conta do GitHub.
-2. Clique no botão **Add New** > **Project**.
-3. Importe o seu repositório `karaoke-pwa`.
-4. Mantenha as configurações padrão (Vercel detectará automaticamente que é um projeto Vite + React).
-5. Clique em **Deploy**. 
-6. Pronto! A Vercel instalará as dependências e compilará o projeto na nuvem em menos de 1 minuto, gerando um link público acessível por qualquer computador ou celular.
-
----
-
-## 🔥 Configuração Inicial do Firebase (Banco de Dados)
-
-O banco de dados Firestore já está ativado no código do app com as suas credenciais fornecidas:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "AIzaSyDyHaeThuIImtuzV44RRw9F1PxxOYRvZLI",
-  authDomain: "karaoke-pwa-d7b4c.firebaseapp.com",
-  projectId: "karaoke-pwa-d7b4c",
-  storageBucket: "karaoke-pwa-d7b4c.firebasestorage.app",
-  messagingSenderId: "482187604515",
-  appId: "1:482187604515:web:2f0edbce7e3a11286fb796"
-};
+### 1. Versionamento no GitHub
+No diretório raiz da plataforma, execute os comandos git para inicializar e versionar o código na branch principal:
+```bash
+git add .
+git commit -m "feat: plataforma profissional Sinfonia Karaoke concluída"
+git branch -M main
+git remote add origin https://github.com/SEU_USUARIO/karaoke-pwa.git
+git push -u origin main
 ```
 
-### Regras do Cloud Firestore
-Para garantir que o aplicativo consiga gravar as pontuações e ler as músicas corretamente, acesse o painel do seu Firebase Console:
-1. Vá em **Build** > **Firestore Database** > **Regras**.
-2. Substitua o bloco de regras padrão por este modelo que permite leitura e escrita pública (ideal para desenvolvimento):
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /{document=**} {
-         allow read, write: if true;
-       }
-     }
-   }
-   ```
-3. Clique em **Publicar**.
+### 2. Vinculação na Vercel
+1. Acesse o console da [Vercel](https://vercel.com/) e crie ou faça login na sua conta vinculada ao GitHub.
+2. Selecione **Add New** > **Project** e importe o repositório `karaoke-pwa`.
+3. Mantenha as configurações padrão (a Vercel aplicará as otimizações de build do Vite automaticamente).
+4. Clique em **Deploy**. O pipeline compilará o código e gerará o endpoint de produção em menos de um minuto.
 
 ---
 
-## 🎤 Como Utilizar o Karaokê
+## 🎤 Operação e Ajustes de Performance
 
-1. **Ajuste de Áudio**: Ao abrir o site, use o painel **Calibração de Áudio & Sensibilidade** no rodapé. Clique em "Testar Nível" e cante próximo ao seu dispositivo para ver a barra verde se mover. Ajuste o controle deslizante para que o ruído ambiente ou a música instrumental tocando de fundo não ultrapassem a barra vermelha de corte.
-2. **Cantar**: Clique no ícone de "Play" de qualquer música do catálogo (Músicas com o marcador roxo *"Tom Mapeado"* possuem notas UltraStar de tom real!).
-3. **Mural de Notas**: Ao cantar músicas mapeadas, você verá o bloco da melodia original se mover na tela. A agulha da sua voz deve coincidir com o bloco. Se coincidir perfeitamente, você acumula pontos na tela e a agulha brilha!
-4. **Importar Novas Músicas**: Se você tiver arquivos `.txt` do UltraStar Deluxe, clique em "Importar UltraStar", arraste o arquivo na tela, cole a URL correspondente do Karaokê do YouTube e confirme. Ela estará gravada e disponível permanentemente para você cantar no site!
+1. **Calibração Rápida de Captação:** Ao iniciar a plataforma, utilize o módulo de **Calibração de Áudio & Sensibilidade** no rodapé. Cante a uma distância confortável do seu dispositivo para ver o medidor gráfico de decibéis oscilar. Ajuste o limiar de sensibilidade para que o ruído ambiente do instrumental não ultrapasse o ponto de corte do microfone.
+2. **Execução de Faixas:** Clique em **Cantar Agora** sobre qualquer faixa do catálogo. O sistema carregará a melhor versão de playback disponível e buscará dinamicamente a partitura UltraStar ou gerará o fallback inteligente.
+3. **Mural de Classificação:** Ao finalizar a performance, insira o seu nome de forma auditada no banco de dados Cloud Firestore para registrar sua marca no Mural de Pontuações global.

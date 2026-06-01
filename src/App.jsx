@@ -76,7 +76,7 @@ export default function App() {
           
           <div className="pwa-badge">
             <Sparkles className="w-4 h-4" />
-            <span>PWA Instalável</span>
+            <span>Acesso Premium</span>
           </div>
         </div>
       </header>
