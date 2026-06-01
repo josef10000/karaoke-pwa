@@ -990,4 +990,201 @@ body::before {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
 }
 
+/* ==========================================
+   CLASSES UTILITÁRIAS DE COMPATIBILIDADE (TAILWIND CSS)
+   ========================================== */
+
+/* Display & Flexbox & Posicionamento */
+.flex { display: flex !important; }
+.inline-flex { display: inline-flex !important; }
+.flex-1 { flex: 1 1 0% !important; }
+.flex-col { flex-direction: column !important; }
+.flex-wrap { flex-wrap: wrap !important; }
+.shrink-0 { flex-shrink: 0 !important; }
+.items-center { align-items: center !important; }
+.justify-between { justify-content: space-between !important; }
+.justify-center { justify-content: center !important; }
+.absolute { position: absolute !important; }
+.relative { position: relative !important; }
+.pointer-events-none { pointer-events: none !important; }
+
+/* Z-Index */
+.z-10 { z-index: 10 !important; }
+.z-50 { z-index: 50 !important; }
+
+/* Grid System */
+.grid { display: grid !important; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+/* Gaps (Espaçamentos entre elementos flex/grid) */
+.gap-1 { gap: 4px !important; }
+.gap-1\.5 { gap: 6px !important; }
+.gap-2 { gap: 8px !important; }
+.gap-3 { gap: 12px !important; }
+.gap-4 { gap: 16px !important; }
+.gap-5 { gap: 20px !important; }
+.gap-6 { gap: 24px !important; }
+
+/* Largura & Altura & Sizing */
+.w-full { width: 100% !important; }
+.h-full { height: 100% !important; }
+.w-4 { width: 16px !important; }
+.h-4 { height: 16px !important; }
+.w-5 { width: 20px !important; }
+.h-5 { height: 20px; }
+.w-8 { width: 32px !important; }
+.h-8 { height: 32px !important; }
+.w-10 { width: 40px !important; }
+.h-10 { height: 40px !important; }
+.w-20 { width: 80px !important; }
+.h-20 { height: 80px !important; }
+.w-80 { width: 320px !important; }
+.h-1\.5 { height: 6px !important; }
+.h-2 { height: 8px !important; }
+.h-4 { height: 16px !important; }
+.max-w-5xl { max-width: 1024px !important; }
+.max-w-4xl { max-width: 896px !important; }
+.max-w-\[180px\] { max-width: 180px !important; }
+.min-h-\[120px\] { min-height: 120px !important; }
+.min-h-\[240px\] { min-height: 240px !important; }
+.min-h-\[280px\] { min-height: 280px !important; }
+.min-h-\[340px\] { min-height: 340px !important; }
+.mx-auto { margin-left: auto !important; margin-right: auto !important; }
+
+/* Proporções (Aspect Ratios) */
+.aspect-\[21\/9\] { aspect-ratio: 21 / 9 !important; }
+.aspect-video { aspect-ratio: 16 / 9 !important; }
+
+/* Paddings e Margens */
+.py-6 { padding-top: 24px !important; padding-bottom: 24px !important; }
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 4px !important; }
+.p-4 { padding: 16px !important; }
+.p-5 { padding: 20px !important; }
+.p-6 { padding: 24px !important; }
+.p-8 { padding: 32px !important; }
+.pt-3 { padding-top: 12px !important; }
+.pt-4 { padding-top: 16px !important; }
+.pt-6 { padding-top: 24px !important; }
+.pb-3 { padding-bottom: 12px !important; }
+
+.mb-1 { margin-bottom: 4px !important; }
+.mb-2 { margin-bottom: 8px !important; }
+.mb-2\.5 { margin-bottom: 10px !important; }
+.mb-3 { margin-bottom: 12px !important; }
+.mb-4 { margin-bottom: 16px !important; }
+.mb-5 { margin-bottom: 20px !important; }
+.mb-6 { margin-bottom: 24px !important; }
+.mb-8 { margin-bottom: 32px !important; }
+.mt-0\.5 { margin-top: 2px !important; }
+.mt-1 { margin-top: 4px !important; }
+.mt-2 { margin-top: 8px !important; }
+.mt-3 { margin-top: 12px !important; }
+.mt-4 { margin-top: 16px !important; }
+.mt-5 { margin-top: 20px !important; }
+.mt-auto { margin-top: auto !important; }
+
+/* Coordenadas e Offsets */
+.bottom-2 { bottom: 8px !important; }
+.bottom-16 { bottom: 64px !important; }
+.left-4 { left: 16px !important; }
+.right-4 { right: 16px !important; }
+.top-2 { top: 8px !important; }
+
+/* Tipografia e Alinhamento de Texto */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-xs { font-size: 12px !important; }
+.text-\[9px\] { font-size: 9px !important; }
+.text-\[10px\] { font-size: 10px !important; }
+.text-\[11px\] { font-size: 11px !important; }
+.text-sm { font-size: 14px !important; }
+.text-base { font-size: 16px !important; }
+.text-lg { font-size: 18px !important; }
+.text-xl { font-size: 20px !important; }
+.text-2xl { font-size: 24px !important; }
+.text-3xl { font-size: 30px !important; }
+.font-medium { font-weight: 500 !important; }
+.font-semibold { font-weight: 600 !important; }
+.font-bold { font-weight: 700 !important; }
+.font-extrabold { font-weight: 800 !important; }
+.font-black { font-weight: 900 !important; }
+.uppercase { text-transform: uppercase !important; }
+.tracking-wide { letter-spacing: 0.025em !important; }
+.tracking-wider { letter-spacing: 0.05em !important; }
+.tracking-widest { letter-spacing: 0.1em !important; }
+.leading-none { line-height: 1 !important; }
+.leading-relaxed { line-height: 1.625 !important; }
+.truncate { overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+
+/* Cores do Sistema Sinfonia */
+.text-primary { color: var(--color-primary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.text-accent { color: var(--color-accent) !important; }
+.text-color-text-muted { color: var(--color-text-muted) !important; }
+.text-yellow-400 { color: #facc15 !important; }
+.text-yellow-500 { color: #f59e0b !important; }
+.text-white { color: #ffffff !important; }
+
+/* Bordas e Cantos */
+.border { border: 1px solid rgba(255, 255, 255, 0.08) !important; }
+.border-t { border-top: 1px solid rgba(255, 255, 255, 0.05) !important; }
+.border-white\/5 { border-color: rgba(255, 255, 255, 0.05) !important; }
+.border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
+.border-purple-500\/30 { border-color: rgba(147, 51, 234, 0.3) !important; }
+.rounded-lg { border-radius: 8px !important; }
+.rounded-xl { border-radius: 12px !important; }
+.rounded-2xl { border-radius: 16px !important; }
+.rounded-full { border-radius: 9999px !important; }
+
+/* Planos de Fundo e Filtros */
+.bg-black { background-color: #000000 !important; }
+.bg-black\/25 { background-color: rgba(0, 0, 0, 0.25) !important; }
+.bg-black\/35 { background-color: rgba(0, 0, 0, 0.35) !important; }
+.bg-black\/40 { background-color: rgba(0, 0, 0, 0.40) !important; }
+.bg-black\/60 { background-color: rgba(0, 0, 0, 0.6) !important; }
+.bg-black\/70 { background-color: rgba(0, 0, 0, 0.7) !important; }
+.bg-black\/85 { background-color: rgba(0, 0, 0, 0.85) !important; }
+.bg-black\/95 { background-color: rgba(0, 0, 0, 0.95) !important; }
+.bg-white\/5 { background-color: rgba(255, 255, 255, 0.05) !important; }
+.bg-white\/10 { background-color: rgba(255, 255, 255, 0.1) !important; }
+.bg-purple-500\/10 { background-color: rgba(147, 51, 234, 0.1) !important; }
+.bg-purple-900\/30 { background-color: rgba(147, 51, 234, 0.3) !important; }
+.bg-cyan-500\/10 { background-color: rgba(6, 182, 212, 0.1) !important; }
+.bg-yellow-500\/10 { background-color: rgba(234, 179, 8, 0.1) !important; }
+.bg-yellow-500\/5 { background-color: rgba(234, 179, 8, 0.05) !important; }
+.bg-slate-300\/5 { background-color: rgba(203, 213, 225, 0.05) !important; }
+.bg-amber-600\/5 { background-color: rgba(217, 119, 6, 0.05) !important; }
+.bg-green-950\/20 { background-color: rgba(5, 46, 22, 0.2) !important; }
+
+.border-purple-500\/25 { border-color: rgba(147, 51, 234, 0.25) !important; }
+.border-purple-500\/35 { border-color: rgba(147, 51, 234, 0.35) !important; }
+.border-cyan-500\/25 { border-color: rgba(6, 182, 212, 0.25) !important; }
+.border-yellow-500\/25 { border-color: rgba(234, 179, 8, 0.25) !important; }
+.border-yellow-500\/35 { border-color: rgba(234, 179, 8, 0.35) !important; }
+.border-slate-300\/35 { border-color: rgba(203, 213, 225, 0.35) !important; }
+.border-amber-600\/35 { border-color: rgba(217, 119, 6, 0.35) !important; }
+.border-green-500\/30 { border-color: rgba(34, 197, 94, 0.3) !important; }
+
+/* Auxiliares e Transições */
+.overflow-hidden { overflow: hidden !important; }
+.overflow-y-auto { overflow-y: auto !important; }
+.backdrop-filter { backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; }
+.backdrop-blur-md { backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; }
+.scale-100 { transform: scale(1) !important; }
+.hover\:scale-105:hover { transform: scale(1.05) !important; transition: transform var(--transition-fast) !important; }
+.shadow-\[0_0_30px_rgba\(168\,85\,247\,0\.6\)\] { box-shadow: 0 0 30px rgba(168, 85, 247, 0.6) !important; }
+
+/* Responsividade Mapeada */
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .md\:col-span-2 { grid-column: span 2 / span 2 !important; }
+  .md\:flex { display: flex !important; }
+  .md\:inline { display: inline !important; }
+  .md\:max-w-md { max-width: 448px !important; }
+  .hidden { display: none !important; }
+}
+
 
