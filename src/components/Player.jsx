@@ -281,11 +281,11 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         </div>
       </div>
 
-      {/* Grid de Vídeo e Barra de Pitch */}
-      <div className="flex flex-col gap-4 flex-1 mb-4">
+      {/* Grid de Vídeo e Barra de Pitch - Premium Lado a Lado no PC */}
+      <div className="player-workspace-grid flex-1 mb-6">
         
         {/* YouTube Container */}
-        <div className="glass-panel p-1 aspect-video relative overflow-hidden rounded-2xl bg-black max-h-[360px] mx-auto w-full">
+        <div className="glass-panel p-1 aspect-video relative overflow-hidden rounded-2xl bg-black w-full h-full min-h-[240px]">
           <div id="youtube-player" className="w-full h-full rounded-xl pointer-events-none" />
           
           {/* Overlay de Canto Inicial */}

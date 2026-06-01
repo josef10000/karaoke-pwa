@@ -709,3 +709,88 @@ body::before {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* ==========================================
+   ESTILOS PREMIUM DE REORGANIZAÇÃO E RESPONSIVIDADE
+   ========================================== */
+
+/* Grid do Player para desktop (vídeo esquerda, notas direita) */
+.player-workspace-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .player-workspace-grid {
+    grid-template-columns: 1.25fr 0.75fr;
+    align-items: stretch;
+  }
+  
+  .pitch-track-container {
+    height: 100% !important;
+    min-height: 320px;
+  }
+}
+
+/* Novo layout para os resultados lado-a-lado no desktop */
+.results-workspace-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .results-workspace-grid {
+    grid-template-columns: 1fr 1.1fr;
+  }
+}
+
+/* Inputs de texto premium */
+.input-field {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.input-field:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-neon-blue);
+}
+
+/* Card de Rank Neon Circular */
+.rank-badge-neon {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 56px;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, transparent 70%);
+  border: 3px solid var(--color-primary);
+  box-shadow: 0 0 25px var(--color-primary), inset 0 0 15px var(--color-primary);
+  color: #fff;
+  text-shadow: 0 0 15px rgba(255,255,255,0.6);
+  margin: 16px auto;
+  animation: pulse-neon 2s infinite ease-in-out;
+}
+
+@keyframes pulse-neon {
+  0% { transform: scale(1); box-shadow: 0 0 20px var(--color-primary), inset 0 0 10px var(--color-primary); }
+  50% { transform: scale(1.04); box-shadow: 0 0 35px var(--color-primary), inset 0 0 20px var(--color-primary); }
+  100% { transform: scale(1); box-shadow: 0 0 20px var(--color-primary), inset 0 0 10px var(--color-primary); }
+}
+
