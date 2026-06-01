@@ -123,45 +123,26 @@ export default function Home({ onSelectSong, onNavigateToImport }) {
   return (
     <div className="flex-1 flex flex-col w-full">
       
-      {/* Banner Principal Estilo Cyber-Neon */}
-      <div className="glass-panel hero-banner">
-        <div className="hero-tag">
-          <Sparkles className="w-4 h-4" />
-          <span>Plataforma Profissional de Karaokê</span>
+      {/* Cabeçalho Compacto e Sofisticado */}
+      <div className="mb-6 flex-row-between">
+        <div>
+          <h2 className="text-3xl font-black font-title text-white">Catálogo de Faixas</h2>
+          <p className="text-xs text-color-text-muted mt-0.5">Explore as melodias mapeadas ou busque suas faixas favoritas para performance.</p>
         </div>
-        
-        <h1 className="hero-title">
-          <span className="text-gradient title-glow font-black">SINFONIA</span>{' '}
-          <span className="text-white">KARAOKE</span>
-        </h1>
-        
-        <p className="hero-desc">
-          Solte a sua voz com alta fidelidade de captação, sistema profissional de pontuação em tempo real por pitch e biblioteca integrada de melodias e letras sincronizadas.
-        </p>
       </div>
 
-      {/* Barra de Ações Rápidas (Pesquisa e Importar) */}
-      <div className="actions-wrapper">
-        {/* Input de Busca */}
-        <div className="search-container">
+      {/* Barra de Busca (Largura Total Premium) */}
+      <div className="actions-wrapper mb-6" style={{ gridTemplateColumns: '1fr' }}>
+        <div className="search-container" style={{ maxWidth: '100%' }}>
           <input
             type="text"
-            placeholder="Pesquise por música ou artista..."
+            placeholder="Pesquise por faixa, artista ou gênero..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
           <Search className="search-icon w-5 h-5" />
         </div>
-
-        {/* Botão de Importar UltraStar */}
-        <button
-          onClick={onNavigateToImport}
-          className="btn btn-primary"
-        >
-          <Upload className="w-5 h-5" />
-          Importar UltraStar (.txt)
-        </button>
       </div>
 
       {/* Filtros de Categoria */}

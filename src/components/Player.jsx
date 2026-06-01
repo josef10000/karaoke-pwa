@@ -548,16 +548,8 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   return (
     <div className="flex-1 flex flex-col w-full relative">
       
-      {/* Detalhes Superiores do Player */}
       <div className="glass-panel p-4 mb-4 flex-row-between">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => { stopAudioCapture(); onNavigateHome(); }}
-            className="btn btn-secondary"
-            style={{ padding: '8px 16px', borderRadius: '10px' }}
-          >
-            <LogOut className="w-4 h-4" /> Sair
-          </button>
           <div>
             <h3 className="font-bold font-title text-base truncate max-w-[180px] md:max-w-md text-white">{song.title}</h3>
             <p className="text-xs text-color-text-muted leading-none mt-0.5">{song.artist}</p>
@@ -588,51 +580,28 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
 
           {/* Overlay de Canto Inicial */}
           {!isPlaying && (
-
             <div className="absolute inset-0 bg-black/85 backdrop-filter backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-10 overflow-y-auto">
-              <span className="hero-tag mb-2">
-                <Sparkles className="w-4 h-4" /> Preparar para Soltar a Voz
+              <span className="hero-tag mb-3">
+                <Mic className="w-4 h-4 text-primary animate-pulse" /> Estúdio de Performance Vocal
               </span>
-              <h2 className="text-3xl font-extrabold font-title mb-4 text-white">{song.title}</h2>
+              <h2 className="text-3xl font-extrabold font-title mb-6 text-white">{song.title}</h2>
               <button
                 onClick={togglePlay}
-                className="btn btn-primary rounded-full w-16 h-16 p-0 flex items-center justify-center text-white scale-100 hover:scale-105 mb-4 shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+                className="btn btn-primary rounded-full w-20 h-20 p-0 flex items-center justify-center text-white scale-100 hover:scale-105 mb-6 shadow-[0_0_30px_rgba(168,85,247,0.6)]"
               >
-                <Play className="w-6 h-6 fill-current ml-1" />
+                <Play className="w-8 h-8 fill-current ml-1" />
               </button>
 
+              {/* Botão de Sair no Overlay de Preparação para o cantor poder voltar se quiser */}
+              <button
+                onClick={() => { stopAudioCapture(); onNavigateHome(); }}
+                className="btn btn-secondary text-xs py-2 px-4 rounded-xl flex items-center gap-1.5 mb-6"
+                style={{ minHeight: 'auto' }}
+              >
+                <LogOut className="w-3.5 h-3.5" /> Cancelar e Voltar ao Catálogo
+              </button>
 
-              
-              {/* Box rápido para trocar o vídeo caso esteja indisponível */}
-              <div className="w-full max-w-sm glass-panel p-3 bg-black/60 border border-white/5 rounded-xl">
-                <p className="text-[10px] text-color-text-muted mb-2 flex items-center gap-1 justify-center">
-                  <AlertTriangle className="w-3.5 h-3.5 text-yellow-400" /> 
-                  Vídeo indisponível? Insira uma URL alternativa do YouTube:
-                </p>
-                <div className="flex gap-2">
-                  <input
-                     type="text"
-                     placeholder="Cole aqui o link do YouTube..."
-                     value={tempYoutubeLink}
-                     onChange={(e) => {
-                       setTempYoutubeLink(e.target.value);
-                       setYoutubeError('');
-                     }}
-                     className="flex-1 select-field text-xs py-1.5 px-3 bg-white/5 border border-white/10 rounded-lg text-white"
-                  />
-                  <button
-                    onClick={() => handleUpdateVideoId(tempYoutubeLink)}
-                    className="btn btn-secondary text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
-                  >
-                    <Link2 className="w-3.5 h-3.5" /> Mudar
-                  </button>
-                </div>
-                {youtubeError && (
-                  <p className="text-[9px] text-red-400 mt-1 font-bold">{youtubeError}</p>
-                )}
-              </div>
-
-              <p className="text-[10px] text-color-text-muted mt-4 max-w-xs leading-tight">
+              <p className="text-[11px] text-color-text-muted max-w-xs leading-normal">
                 Calibre o ganho do seu microfone e posicione o dispositivo de captação de áudio adequadamente antes de iniciar.
               </p>
             </div>
@@ -718,6 +687,14 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
 
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => { stopAudioCapture(); onNavigateHome(); }}
+              className="btn btn-secondary flex items-center gap-1.5"
+              style={{ padding: '8px 16px', borderRadius: '10px' }}
+            >
+              <LogOut className="w-4 h-4 text-red-400" /> Sair
+            </button>
+
             <button
               onClick={() => setShowSettings(!showSettings)}
               className="btn btn-secondary flex items-center gap-1.5"
