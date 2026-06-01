@@ -1,8 +1,8 @@
 // Catálogo Geral Estático de 100 Músicas (50 Nacionais e 50 Internacionais)
 export const songsCatalog = [
   // --- NACIONAIS (1 a 50) ---
-  { id: "br-1", title: "Evidências", artist: "Chitãozinho & Xororó", youtubeId: "ePjtnSPFWK8", category: "Nacional", hasDemo: true },
-  { id: "br-2", title: "Como Eu Quero", artist: "Kid Abelha", youtubeId: "zV4kQvYd_o8", category: "Nacional", hasDemo: true },
+  { id: "br-1", title: "Evidências", artist: "Chitãozinho & Xororó", youtubeId: "Qfb1iMgkDxY", category: "Nacional", hasDemo: true },
+  { id: "br-2", title: "Como Eu Quero", artist: "Kid Abelha", youtubeId: "qJ5YV9f44yM", category: "Nacional", hasDemo: true },
   { id: "br-3", title: "Fio de Cabelo", artist: "Chitãozinho & Xororó", youtubeId: "I_rE9r4d21g", category: "Nacional" },
   { id: "br-4", title: "Boate Azul", artist: "Joaquim & Manuel", youtubeId: "R-vK_M_K8_c", category: "Nacional" },
   { id: "br-5", title: "Eduardo e Mônica", artist: "Legião Urbana", youtubeId: "148Y72pUe3s", category: "Nacional" },

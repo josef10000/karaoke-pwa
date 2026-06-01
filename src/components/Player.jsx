@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, LogOut, Sparkles, Mic, Settings } from 'lucide-react';
+import { Play, Pause, LogOut, Sparkles, Mic, Settings, Link2, AlertTriangle } from 'lucide-react';
 import { initAudioStream } from '../utils/audio';
 import { findTargetNoteAtTime, evaluatePitch, getFeedbackStyle } from '../utils/scoring';
 import { demoSongsNotes } from '../songs-catalog';
+import { extractYouTubeId } from '../utils/ultrastar';
+
 
 export default function Player({ song, threshold, setThreshold, selectedAudioDevice, setSelectedAudioDevice, onFinishSong, onNavigateHome }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState(0);
   const [activeNote, setActiveNote] = useState(null);
+  
+  // ID ativo do YouTube e controle do link alternativo
+  const [activeYoutubeId, setActiveYoutubeId] = useState(song.youtubeId);
+  const [tempYoutubeLink, setTempYoutubeLink] = useState('');
+  const [youtubeError, setYoutubeError] = useState('');
+
   
   // Lista de microfones disponíveis para o seletor rápido no Player
   const [devicesList, setDevicesList] = useState([]);
@@ -65,7 +73,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
       }
 
       ytPlayerRef.current = new window.YT.Player('youtube-player', {
-        videoId: song.youtubeId,
+        videoId: activeYoutubeId,
         playerVars: {
           autoplay: 0,
           controls: 0, // Oculta controles nativos para design premium customizado
@@ -98,7 +106,8 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         try { ytPlayerRef.current.destroy(); } catch (e) {}
       }
     };
-  }, [song]);
+  }, [song, activeYoutubeId]);
+
 
   // Loop de atualização de tempo sincronizado do YouTube
   useEffect(() => {
@@ -325,19 +334,58 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
           
           {/* Overlay de Canto Inicial */}
           {!isPlaying && (
-            <div className="absolute inset-0 bg-black/80 backdrop-filter backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+            <div className="absolute inset-0 bg-black/85 backdrop-filter backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-10 overflow-y-auto">
               <span className="hero-tag mb-2">
                 <Sparkles className="w-4 h-4" /> Preparar para Soltar a Voz
               </span>
-              <h2 className="text-3xl font-extrabold font-title mb-6 text-white">{song.title}</h2>
+              <h2 className="text-3xl font-extrabold font-title mb-4 text-white">{song.title}</h2>
               <button
                 onClick={togglePlay}
-                className="btn btn-primary rounded-full w-20 h-20 p-0 flex items-center justify-center text-white scale-100 hover:scale-105"
+                className="btn btn-primary rounded-full w-16 h-16 p-0 flex items-center justify-center text-white scale-100 hover:scale-105 mb-4 shadow-[0_0_20px_rgba(168,85,247,0.5)]"
               >
-                <Play className="w-8 h-8 fill-current ml-1" />
+                <Play className="w-6 h-6 fill-current ml-1" />
               </button>
-              <p className="text-xs text-color-text-muted mt-6 max-w-sm">
-                Conecte a caixa Bluetooth, posicione os microfones e selecione o captador de áudio correto clicando em Calibrar abaixo!
+              
+              {/* Box rápido para trocar o vídeo caso esteja indisponível */}
+              <div className="w-full max-w-sm glass-panel p-3 bg-black/60 border border-white/5 rounded-xl">
+                <p className="text-[10px] text-color-text-muted mb-2 flex items-center gap-1 justify-center">
+                  <AlertTriangle className="w-3.5 h-3.5 text-yellow-400" /> 
+                  Vídeo com erro ou indisponível? Troque o link:
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Cole aqui o link do YouTube..."
+                    value={tempYoutubeLink}
+                    onChange={(e) => {
+                      setTempYoutubeLink(e.target.value);
+                      setYoutubeError('');
+                    }}
+                    className="flex-1 select-field text-xs py-1.5 px-3 bg-white/5 border border-white/10 rounded-lg text-white"
+                  />
+                  <button
+                    onClick={() => {
+                      const id = extractYouTubeId(tempYoutubeLink);
+                      if (id) {
+                        setActiveYoutubeId(id);
+                        setTempYoutubeLink('');
+                        setYoutubeError('');
+                      } else {
+                        setYoutubeError('Link inválido!');
+                      }
+                    }}
+                    className="btn btn-secondary text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
+                  >
+                    <Link2 className="w-3.5 h-3.5" /> Mudar
+                  </button>
+                </div>
+                {youtubeError && (
+                  <p className="text-[9px] text-red-400 mt-1 font-bold">{youtubeError}</p>
+                )}
+              </div>
+
+              <p className="text-[10px] text-color-text-muted mt-4 max-w-xs leading-tight">
+                Posicione os microfones da caixa Bluetooth e clique em Calibrar abaixo se necessário!
               </p>
             </div>
           )}
@@ -462,7 +510,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
           </div>
 
           {/* Sensibilidade (Threshold) */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 mb-3">
             <div className="flex justify-between text-[10px] text-color-text-muted">
               <span>Limiar de Captação</span>
               <span className="font-bold text-primary font-title">{(threshold * 1000).toFixed(0)} mV</span>
@@ -479,6 +527,35 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
             <div className="flex justify-between text-[9px] text-color-text-muted leading-none">
               <span>Silêncio</span>
               <span>Caixa de Som no Alto</span>
+            </div>
+          </div>
+
+          {/* Troca de Link Rápida no Menu */}
+          <div className="flex flex-col gap-1.5 border-t border-white/5 pt-3">
+            <span className="text-[10px] font-semibold text-color-text-muted uppercase">Substituir Vídeo Ativo</span>
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                placeholder="URL ou ID do YouTube..."
+                value={tempYoutubeLink}
+                onChange={(e) => setTempYoutubeLink(e.target.value)}
+                className="flex-1 select-field text-[11px] py-1.5 px-2.5 bg-white/5 border border-white/10 rounded-lg text-white"
+              />
+              <button
+                onClick={() => {
+                  const id = extractYouTubeId(tempYoutubeLink);
+                  if (id) {
+                    setActiveYoutubeId(id);
+                    setTempYoutubeLink('');
+                    alert("Vídeo atualizado com sucesso!");
+                  } else {
+                    alert("Link do YouTube inválido.");
+                  }
+                }}
+                className="btn btn-primary text-xs px-2.5 py-1.5 rounded-lg"
+              >
+                Alterar
+              </button>
             </div>
           </div>
         </div>

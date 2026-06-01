@@ -15,6 +15,7 @@ Este projeto foi construído utilizando **React**, **Vite** e **CSS Vanilla (Cyb
 *   **🛠️ Calibração de Ruído Integrada (Noise Gate)**: Slider de sensibilidade em milivolts (mV) para calibrar a captação do microfone do celular ou computador. Isso impede que o som instrumental vindo da caixa de som externa seja interpretado como a voz do cantor.
 *   **🌐 Mural de Melhores Cantores (Leaderboard)**: Sincronização em tempo real com o **Firebase Firestore** para listar o ranking das maiores pontuações por música e permitir que você grave o seu nome na história do karaokê.
 *   **📱 Progressive Web App (PWA)**: Totalmente responsivo para telas cheias de computadores, TVs ou dispositivos móveis. Pode ser "Instalado" como aplicativo nativo na tela inicial do seu celular, com visual otimizado sem bordas de navegador.
+*   **🔗 Substituição Dinâmica de Vídeos (YouTube Live Swap)**: Se o vídeo de karaokê padrão do catálogo apresentar erro ("Vídeo Indisponível") devido a restrições de direitos autorais, o usuário pode colar qualquer link alternativo do YouTube diretamente no player. O aplicativo extrai o ID e reinicializa o player em tempo real, sem perder o progresso ou as notas mapeadas.
 
 ---
 
