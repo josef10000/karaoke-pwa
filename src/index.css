@@ -1205,4 +1205,93 @@ body::before {
   .hidden { display: none !important; }
 }
 
+/* ==========================================
+   MODAIS E OVERLAYS VANILLA CSS (CYBER-NEON)
+   ========================================== */
+
+/* Overlay de tela inteira para modais */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+  animation: modalFadeIn 0.3s ease forwards;
+}
+
+/* Contêiner de conteúdo de modais */
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  box-shadow: 0 0 40px rgba(147, 51, 234, 0.25), var(--shadow-glass);
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 24px;
+  position: relative;
+  animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Overlay específico para o player */
+.player-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  z-index: 1000;
+  overflow-y: auto;
+  animation: modalFadeIn 0.3s ease forwards;
+}
+
+/* Card central dos overlays do player */
+.player-overlay-card {
+  background: rgba(18, 20, 35, 0.9);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  box-shadow: 0 0 50px rgba(168, 85, 247, 0.15), var(--shadow-glass);
+  border-radius: 18px;
+  max-width: 400px;
+  width: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Animações nativas */
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+
 

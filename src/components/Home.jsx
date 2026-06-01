@@ -319,8 +319,8 @@ export default function Home({ onSelectSong }) {
 
       {/* Modal Premium Glassmorphic para Cadastrar Nova Música */}
       {showRegisterForm && (
-        <div className="fixed inset-0 bg-black/75 backdrop-filter backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="glass-panel max-w-md w-full p-6 border border-purple-500/30 shadow-[0_0_40px_rgba(147,51,234,0.25)] relative animate-fade-in">
+        <div className="modal-overlay">
+          <div className="modal-content">
             {/* Botão Fechar */}
             <button 
               onClick={() => {

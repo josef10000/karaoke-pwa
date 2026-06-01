@@ -96,7 +96,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   const [youtubeError, setYoutubeError] = useState('');
 
   // Controle opcional de letras sincronizadas LRCLIB
-  const [showLyrics, setShowLyrics] = useState(false); // Padrão: DESATIVADO (OFF)
+  const showLyrics = false; // Forçado como false conforme solicitado
   const [lrcLines, setLrcLines] = useState([]);
   const [activeLrcLine, setActiveLrcLine] = useState(null);
   const [nextLrcLine, setNextLrcLine] = useState(null);
@@ -553,6 +553,16 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
           <div>
             <h3 className="font-bold font-title text-base truncate max-w-[180px] md:max-w-md text-white">{song.title}</h3>
             <p className="text-xs text-color-text-muted leading-none mt-0.5">{song.artist}</p>
+            <button
+              onClick={() => {
+                setTempYoutubeLink('');
+                setYoutubeError('setup');
+              }}
+              className="text-[10px] text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1 mt-1.5 underline decoration-dotted transition-colors"
+              style={{ minHeight: 'auto', background: 'none', border: 'none', padding: 0 }}
+            >
+              <Link2 className="w-3 h-3" /> Vídeo Quebrado? Trocar Link
+            </button>
           </div>
         </div>
 
@@ -570,18 +580,12 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         <div className="glass-panel p-1 aspect-video relative overflow-hidden rounded-2xl bg-black w-full h-full min-h-[240px]">
           <div id="youtube-player" className="w-full h-full rounded-xl pointer-events-none" />
           
-          {/* Tarja de Letras Sincronizadas Flutuante (Opção A - Padrão OFF) */}
-          {showLyrics && isPlaying && activeLrcLine && (
-            <div className="lyric-floating-overlay animate-fade-in">
-              <p className="lyric-floating-line">{activeLrcLine.text}</p>
-              {nextLrcLine && <p className="lyric-floating-line next-line">{nextLrcLine.text}</p>}
-            </div>
-          )}
+
 
           {/* Overlay Glassmorphic de Recuperação/Substituição de Link do YouTube */}
           {youtubeError && (
-            <div className="absolute inset-0 bg-black/90 backdrop-filter backdrop-blur-lg flex flex-col items-center justify-center p-6 text-center z-20 animate-fade-in">
-              <div className="glass-panel p-6 max-w-sm w-full border border-purple-500/30 shadow-[0_0_50px_rgba(168,85,247,0.15)] flex flex-col items-center">
+            <div className="player-overlay">
+              <div className="player-overlay-card">
                 <AlertTriangle className="w-10 h-10 text-yellow-500 mb-3 animate-pulse" />
                 <h3 className="text-base font-bold font-title text-white mb-1">Vídeo Indisponível?</h3>
                 <p className="text-[11px] text-color-text-muted mb-4 leading-relaxed">
@@ -641,7 +645,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
 
           {/* Overlay de Canto Inicial */}
           {!isPlaying && (
-            <div className="absolute inset-0 bg-black/85 backdrop-filter backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-10 overflow-y-auto">
+            <div className="player-overlay">
               <span className="hero-tag mb-3">
                 <Mic className="w-4 h-4 text-primary animate-pulse" /> Estúdio de Performance Vocal
               </span>
@@ -741,17 +745,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
               <Pause className="w-5 h-5" />
             </button>
 
-            {/* Toggle de Letras Sincronizadas (Padrão OFF) */}
-            <div 
-              onClick={() => setShowLyrics(!showLyrics)} 
-              className="toggle-container"
-              title="Exibir legenda sincronizada sobre o vídeo"
-            >
-              <div className={`toggle-track ${showLyrics ? 'active' : ''}`}>
-                <div className="toggle-thumb" />
-              </div>
-              <span className="toggle-label">{showLyrics ? 'Letra: ON' : 'Letra: OFF'}</span>
-            </div>
+
 
             <span className="text-xs text-color-text-muted font-bold font-title hidden md:inline">
               Tempo: {Math.floor(currentTime / 60)}:{(currentTime % 60 < 10 ? '0' : '')}{Math.floor(currentTime % 60)}
