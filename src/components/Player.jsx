@@ -224,71 +224,27 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
 
   const handleFinish = () => {
     stopAudioCapture();
-    const maxPossible = hasTargetNotes ? songData.notes.length * 100 : 15000;
-    const finalPercent = Math.min(Math.round((score / maxPossible) * 100), 100);
-    onFinishSong({ score, scorePercent: finalPercent });
-  };
-
-  // --- Lógica de Renderização de Letras ---
-  const getLyricsMarkup = () => {
-    if (!hasTargetNotes) {
-      return (
-        <div className="text-center py-4">
-          <p className="lyric-line active">Modo Livre - Acompanhe a legenda do vídeo do YouTube!</p>
-          <p className="text-xs text-color-text-muted mt-2">Cante perto do microfone selecionado e acumule pontos por ritmo e volume.</p>
-        </div>
-      );
-    }
-
-    const phrases = [];
-    let currentPhrase = [];
+    let finalPercent = 0;
     
-    songData.notes.forEach((note, idx) => {
-      currentPhrase.push(note);
-      const nextNote = songData.notes[idx + 1];
+    if (hasTargetNotes) {
+      // Filtra apenas as notas que o cantor já teve a oportunidade de cantar até o tempo atual
+      const playedNotes = songData.notes.filter(note => note.time <= currentTime + 0.5);
       
-      if (!nextNote || (nextNote.time - (note.time + note.duration)) > 1.8) {
-        phrases.push([...currentPhrase]);
-        currentPhrase = [];
-      }
-    });
-
-    let activePhraseIndex = phrases.findIndex(phrase => {
-      const start = phrase[0].time;
-      const end = phrase[phrase.length - 1].time + phrase[phrase.length - 1].duration;
-      return currentTime >= start - 1.0 && currentTime <= end + 1.0;
-    });
-
-    if (activePhraseIndex === -1) {
-      activePhraseIndex = phrases.findIndex(phrase => phrase[0].time > currentTime);
+      // Estabelece um mínimo de notas para o cálculo ser estatisticamente justo
+      const calculateAgainstCount = Math.max(playedNotes.length, 5);
+      const maxPossible = calculateAgainstCount * 100;
+      
+      finalPercent = Math.min(Math.round((score / maxPossible) * 100), 100);
+    } else {
+      // Modo Livre (Free-Sing) proporcional ao tempo de vídeo decorrido
+      const duration = ytPlayerRef.current && ytPlayerRef.current.getDuration ? ytPlayerRef.current.getDuration() : 180;
+      const progressPercent = Math.max(0.05, Math.min(currentTime / duration, 1));
+      const maxPossible = Math.round(15000 * progressPercent);
+      
+      finalPercent = Math.min(Math.round((score / maxPossible) * 100), 100);
     }
-
-    const currentWords = activePhraseIndex !== -1 ? phrases[activePhraseIndex] : [];
-    const nextWords = activePhraseIndex !== -1 && phrases[activePhraseIndex + 1] ? phrases[activePhraseIndex + 1] : [];
-
-    return (
-      <div className="flex flex-col items-center justify-center py-2">
-        {/* Linha Ativa */}
-        <div className="lyric-line active min-h-[40px]">
-          {currentWords.map((word, idx) => {
-            const isSung = currentTime >= word.time;
-            return (
-              <span
-                key={idx}
-                className={`lyric-word ${isSung ? 'sung' : ''}`}
-              >
-                {word.text}
-              </span>
-            );
-          })}
-        </div>
-        
-        {/* Linha de Preparação */}
-        <div className="lyric-line text-sm opacity-40 mt-1 min-h-[25px] font-medium scale-90">
-          {nextWords.map((word) => word.text).join('')}
-        </div>
-      </div>
-    );
+    
+    onFinishSong({ score, scorePercent: finalPercent });
   };
 
   const getNoteYPosition = (midiNote) => {
@@ -408,9 +364,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
                     width: '50%',
                     transform: 'translateY(-50%)'
                   }}
-                >
-                  {activeNote.text}
-                </div>
+                />
               )}
 
               {voiceData.midiNote > 0 && (
@@ -441,12 +395,6 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         )}
       </div>
 
-      {/* Bloco de Letras Sincronizadas */}
-      {isPlaying && (
-        <div className="glass-panel px-6 py-4 mb-4 bg-black/45">
-          {getLyricsMarkup()}
-        </div>
-      )}
 
       {/* Controles do Karaokê */}
       {isPlaying && (
