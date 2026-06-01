@@ -81,30 +81,34 @@ export default function App() {
           
           {/* Navegação por Abas Premium no Desktop (oculta em modo performance/canto) */}
           {!isPerformanceMode && currentScreen === 'home' && (
-            <nav className="desktop-tabs-nav hidden md:flex items-center gap-1">
+            <nav className="desktop-tabs-nav hidden md:flex">
               <button
                 onClick={() => setActiveTab('catalog')}
                 className={`tab-link-btn ${activeTab === 'catalog' ? 'active' : ''}`}
+                title="Explorar Catálogo de Músicas"
               >
-                <Music className="w-4 h-4" /> Catálogo
+                <Music className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setActiveTab('audio')}
                 className={`tab-link-btn ${activeTab === 'audio' ? 'active' : ''}`}
+                title="Central de Engenharia Acústica e Som"
               >
-                <Mic className="w-4 h-4" /> Central de Som
+                <Mic className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setActiveTab('import')}
                 className={`tab-link-btn ${activeTab === 'import' ? 'active' : ''}`}
+                title="Importar Arquivo de Canto UltraStar"
               >
-                <Upload className="w-4 h-4" /> Importar
+                <Upload className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setActiveTab('leaderboard')}
                 className={`tab-link-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                title="Ranking e Classificação Global"
               >
-                <Trophy className="w-4 h-4" /> Ranking Geral
+                <Trophy className="w-5 h-5" />
               </button>
             </nav>
           )}
@@ -165,34 +169,34 @@ export default function App() {
 
       {/* Navegação de Rodapé responsiva em Mobile (oculta em modo performance/canto) */}
       {!isPerformanceMode && currentScreen === 'home' && (
-        <nav className="mobile-tabs-nav md:hidden flex justify-around items-center border-t border-white/5 py-2 px-4 fixed bottom-0 left-0 right-0 z-50 glass-panel bg-black/95">
+        <nav className="mobile-tabs-nav md:hidden">
           <button
             onClick={() => setActiveTab('catalog')}
             className={`mobile-tab-btn ${activeTab === 'catalog' ? 'active' : ''}`}
+            title="Catálogo de Músicas"
           >
-            <Music className="w-5 h-5 mx-auto" />
-            <span className="block text-[9px] mt-0.5 font-bold">Catálogo</span>
+            <Music className="w-6 h-6" />
           </button>
           <button
             onClick={() => setActiveTab('audio')}
             className={`mobile-tab-btn ${activeTab === 'audio' ? 'active' : ''}`}
+            title="Calibração e Som"
           >
-            <Mic className="w-5 h-5 mx-auto" />
-            <span className="block text-[9px] mt-0.5 font-bold">Som</span>
+            <Mic className="w-6 h-6" />
           </button>
           <button
             onClick={() => setActiveTab('import')}
             className={`mobile-tab-btn ${activeTab === 'import' ? 'active' : ''}`}
+            title="Importar UltraStar"
           >
-            <Upload className="w-5 h-5 mx-auto" />
-            <span className="block text-[9px] mt-0.5 font-bold">Importar</span>
+            <Upload className="w-6 h-6" />
           </button>
           <button
             onClick={() => setActiveTab('leaderboard')}
             className={`mobile-tab-btn ${activeTab === 'leaderboard' ? 'active' : ''}`}
+            title="Classificação Global"
           >
-            <Trophy className="w-5 h-5 mx-auto" />
-            <span className="block text-[9px] mt-0.5 font-bold">Ranking</span>
+            <Trophy className="w-6 h-6" />
           </button>
         </nav>
       )}
