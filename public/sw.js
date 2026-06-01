@@ -1,18 +1,22 @@
-const CACHE_NAME = 'sinfonia-karaoke-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'sinfonia-karaoke-v2';
+const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
   '/favicon.ico',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png'
 ];
 
-// Instalação do Service Worker e salvamento em cache dos arquivos estáticos essenciais
+// Instalação do Service Worker - cacheia apenas assets estáticos conhecidos
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Usa addAll com tratamento de erros para cada recurso individualmente
+      return Promise.allSettled(
+        STATIC_ASSETS.map((url) => cache.add(url).catch((err) => {
+          console.warn(`SW: Falha ao cachear ${url}:`, err);
+        }))
+      );
     })
   );
   self.skipWaiting();
@@ -34,36 +38,70 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Interceptação de requisições para servir do cache em caso de falha de rede
+// Estratégia: Network First para navegação, Cache First para assets estáticos
 self.addEventListener('fetch', (event) => {
-  // Ignora requisições de APIs de terceiros (como YouTube ou Firebase) para evitar problemas de CORS ou falha de integridade
-  if (!event.request.url.startsWith(self.location.origin)) {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Ignora requisições de APIs de terceiros (YouTube, Firebase, Google Fonts, etc.)
+  if (url.origin !== self.location.origin) {
     return;
   }
-  
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        // Retorna a resposta se não for um asset dinâmico
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+
+  // Para requisições de navegação (HTML), sempre tenta a rede primeiro
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cacheia a página principal para uso offline
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
           return response;
+        })
+        .catch(() => {
+          return caches.match('/') || caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // Para assets com hash do Vite (/assets/*), usa Cache First (são imutáveis)
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        
-        // Cacheia novas requisições estáticas locais
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
+        return fetch(request).then((response) => {
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
         });
-        
+      })
+    );
+    return;
+  }
+
+  // Para outros recursos locais, tenta cache primeiro, depois rede
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      return cachedResponse || fetch(request).then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+        }
         return response;
       }).catch(() => {
-        // Fallback offline se a rota for de navegação
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
+        // Retorna vazio para recursos não essenciais
+        return new Response('', { status: 408, statusText: 'Offline' });
       });
     })
   );

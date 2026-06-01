@@ -24,3 +24,67 @@ jobs:
 
     - name: Executar Build do Vite
       run: npm run build
+
+    - name: Verificar se os assets foram gerados
+      run: |
+        echo "📦 Verificando pasta dist/assets..."
+        ls -la dist/
+        ls -la dist/assets/
+        
+        echo ""
+        echo "🔍 Verificando arquivos JS gerados..."
+        JS_FILES=$(find dist/assets -name "*.js" | wc -l)
+        echo "Arquivos JS encontrados: $JS_FILES"
+        
+        if [ "$JS_FILES" -eq "0" ]; then
+          echo "❌ ERRO: Nenhum arquivo JS foi gerado no build!"
+          exit 1
+        fi
+        
+        echo ""
+        echo "🔍 Verificando arquivos CSS gerados..."
+        CSS_FILES=$(find dist/assets -name "*.css" | wc -l)
+        echo "Arquivos CSS encontrados: $CSS_FILES"
+        
+        if [ "$CSS_FILES" -eq "0" ]; then
+          echo "❌ ERRO: Nenhum arquivo CSS foi gerado no build!"
+          exit 1
+        fi
+        
+        echo ""
+        echo "✅ Build verificado com sucesso!"
+
+    - name: Verificar index.html referencia os assets
+      run: |
+        echo "🔍 Verificando se index.html contém referências a /assets/..."
+        if grep -q '/assets/' dist/index.html; then
+          echo "✅ index.html referencia corretamente os assets do build"
+        else
+          echo "❌ ERRO: index.html não contém referências a /assets/"
+          cat dist/index.html
+          exit 1
+        fi
+
+    - name: Verificar ícones PWA existem
+      run: |
+        echo "🔍 Verificando ícones do PWA..."
+        if [ -f "dist/assets/icons/icon-192.png" ] && [ -f "dist/assets/icons/icon-512.png" ]; then
+          echo "✅ Ícones PWA presentes"
+          file dist/assets/icons/icon-192.png
+          file dist/assets/icons/icon-512.png
+        else
+          echo "❌ ERRO: Ícones PWA faltando!"
+          ls -la dist/assets/icons/ 2>/dev/null || echo "Pasta icons não existe"
+          exit 1
+        fi
+
+    - name: Verificar manifest.json
+      run: |
+        echo "🔍 Verificando manifest.json..."
+        if [ -f "dist/manifest.json" ]; then
+          echo "✅ manifest.json presente"
+          cat dist/manifest.json
+        else
+          echo "❌ ERRO: manifest.json não encontrado no dist!"
+          exit 1
+        fi

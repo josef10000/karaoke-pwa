@@ -7,5 +7,19 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        // Garante nomes de chunks limpos para o Vite
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          firebase: ['firebase/app', 'firebase/firestore']
+        }
+      }
+    }
   }
 })
