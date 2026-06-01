@@ -98,17 +98,20 @@ export function parseUltraStar(txtContent) {
   return song;
 }
 
-// Extrai o ID do YouTube de URLs de vários formatos
+// Extrai o ID do YouTube de URLs de vários formatos, incluindo /watch/, /live/, /shorts/, /embed/ e compartilhamento mobile
 export function extractYouTubeId(url) {
   if (!url) return "";
+  
+  url = url.trim();
   
   // Se já for apenas um ID (11 caracteres alfanuméricos/hifens/underscores)
   if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
     return url;
   }
 
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  // Expressão regular avançada compatível com shorts, transmissões ao vivo, watch normal, embed e links encurtados
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/;
   const match = url.match(regExp);
 
-  return (match && match[2].length === 11) ? match[2] : "";
+  return match ? match[1] : "";
 }

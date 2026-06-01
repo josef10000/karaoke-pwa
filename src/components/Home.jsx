@@ -26,7 +26,7 @@ function generateNeonPlaceholder(title, artist) {
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${encodeURIComponent(gradient.start)}"/><stop offset="100%" stop-color="${encodeURIComponent(gradient.end)}"/></linearGradient></defs><rect width="100" height="100" fill="url(%23g)"/><circle cx="50" cy="50" r="30" fill="black" fill-opacity="0.15"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="900" font-size="28" fill="white" fill-opacity="0.95">${initials}</text></svg>`;
 }
 
-// Componente para renderizar capas inteligentes do Deezer
+// Componente para renderizar capas inteligentes de alta resolução do iTunes da Apple Music (CORS-friendly)
 function AlbumCover({ title, artist }) {
   const cacheKey = `${artist}-${title}`;
   const [coverUrl, setCoverUrl] = useState(albumCoversCache[cacheKey] || null);
@@ -37,21 +37,22 @@ function AlbumCover({ title, artist }) {
     let isMounted = true;
     const fetchCover = async () => {
       try {
-        // Deezer API com codificação de URI
-        const url = `https://api.deezer.com/search?q=track:"${encodeURIComponent(title)}" artist:"${encodeURIComponent(artist)}"`;
+        // API pública do iTunes com suporte nativo a CORS e alta disponibilidade
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&limit=1&entity=song`;
         const res = await fetch(url);
         if (!res.ok) throw new Error();
         
         const data = await res.json();
-        if (data.data && data.data.length > 0 && data.data[0].album?.cover_medium) {
-          const imgUrl = data.data[0].album.cover_medium;
+        if (data.results && data.results.length > 0 && data.results[0].artworkUrl100) {
+          // Obtém a capa em altíssima resolução (500x500px) substituindo o tamanho padrão da URL
+          const imgUrl = data.results[0].artworkUrl100.replace('100x100bb.jpg', '500x500bb.jpg');
           albumCoversCache[cacheKey] = imgUrl;
           if (isMounted) setCoverUrl(imgUrl);
         } else {
-          throw new Error('Deezer vazio');
+          throw new Error('iTunes vazio');
         }
       } catch (err) {
-        // Fallback robusto e lindo em SVG
+        // Fallback robusto e elegante em SVG com Design System Cyber-Neon
         const fallback = generateNeonPlaceholder(title, artist);
         albumCoversCache[cacheKey] = fallback;
         if (isMounted) setCoverUrl(fallback);

@@ -94,7 +94,6 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
   const [activeYoutubeId, setActiveYoutubeId] = useState(song.youtubeId);
   const [tempYoutubeLink, setTempYoutubeLink] = useState('');
   const [youtubeError, setYoutubeError] = useState('');
-  const [isAutoCorrectingVideo, setIsAutoCorrectingVideo] = useState(false);
 
   // Controle opcional de letras sincronizadas LRCLIB
   const [showLyrics, setShowLyrics] = useState(false); // Padrão: DESATIVADO (OFF)
@@ -160,6 +159,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
     const id = extractYouTubeId(linkToParse);
     if (!id) {
       setYoutubeError('Link do YouTube inválido!');
+      alert('Link do YouTube inválido! Por favor, insira uma URL ou ID de vídeo correto.');
       return;
     }
 
@@ -177,35 +177,10 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         updatedAt: new Date().toISOString()
       });
       console.log(`💾 Sucesso! Link correto persistido no Firebase para a música ${song.title}`);
+      alert(`O playback de "${song.title}" foi atualizado e salvo com sucesso na plataforma!`);
     } catch (err) {
       console.error("Falha ao gravar link correto no Firebase: ", err);
-    }
-  };
-
-  // Auto-Link Corretivo de Vídeo no YouTube (executado quando o player nativo do YouTube falha ou retorna indisponível)
-  const handleAutoLinkCorrective = async () => {
-    try {
-      console.log(`📡 Iniciando auto-link automático para a música ${song.title}...`);
-      const queryStr = `${song.artist} ${song.title} karaoke playback`;
-      // Proxy de gadgets do Google aberto e gratuito para ler HTML de busca pública do YouTube sem limites e sem chaves
-      const proxyUrl = `https://images${Math.floor(Math.random() * 3) + 1}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=none&url=${encodeURIComponent(`https://www.youtube.com/results?search_query=${encodeURIComponent(queryStr)}`)}`;
-      
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error("Erro de proxy");
-      const htmlText = await res.text();
-      
-      // Localiza o primeiro link de vídeo '/watch?v=[ID_DE_11_CARAC]' na página de busca pública
-      const watchMatch = htmlText.match(/\/watch\?v=([a-zA-Z0-9_-]{11})/);
-      if (watchMatch && watchMatch[1]) {
-        const discoveredId = watchMatch[1];
-        console.log(`✨ Vídeo funcional de Karaokê descoberto automaticamente no YouTube: ${discoveredId}`);
-        // Persiste esse novo link funcional no Firebase para essa música para sempre
-        await handleUpdateVideoId(`https://www.youtube.com/watch?v=${discoveredId}`);
-      } else {
-        throw new Error("Nenhum ID de vídeo detectado no scraping");
-      }
-    } catch (err) {
-      console.error("Falha na auto-correção de vídeo do YouTube: ", err);
+      alert("Não foi possível salvar o link no banco de dados. Por favor, tente novamente.");
     }
   };
 
@@ -372,9 +347,8 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
             }
           },
           onError: (event) => {
-            // Detecta erro de vídeo indisponível/bloqueado por direitos autorais
-            console.warn(`⚠️ Erro detectado no player do YouTube (Código: ${event.data}). Iniciando auto-link corretivo...`);
-            handleAutoLinkCorrective();
+            console.warn(`⚠️ Erro detectado no player do YouTube (Código: ${event.data}).`);
+            alert("Este playback do YouTube não pôde ser reproduzido diretamente (pode estar bloqueado por direitos autorais ou restrição de domínio). Por favor, use o campo no painel para inserir um link alternativo de karaokê funcional.");
           }
         }
       });
@@ -392,7 +366,19 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
         try { ytPlayerRef.current.destroy(); } catch (e) {}
       }
     };
-  }, [song, activeYoutubeId]);
+  }, [song]);
+
+  // Sincroniza dinamicamente o link/ID do YouTube sem reconstruir o player do zero (ultra-estável!)
+  useEffect(() => {
+    if (ytPlayerRef.current && typeof ytPlayerRef.current.cueVideoById === 'function') {
+      try {
+        console.log(`📡 Sincronizando playback no player ativo: ${activeYoutubeId}`);
+        ytPlayerRef.current.cueVideoById(activeYoutubeId);
+      } catch (e) {
+        console.warn("Falha ao usar cueVideoById no player ativo, recriando o player.");
+      }
+    }
+  }, [activeYoutubeId]);
 
 
 
@@ -615,21 +601,7 @@ export default function Player({ song, threshold, setThreshold, selectedAudioDev
                 <Play className="w-6 h-6 fill-current ml-1" />
               </button>
 
-              {/* Botão de Auto-Correção Proativa de Vídeo */}
-              <button
-                onClick={async () => {
-                  setIsAutoCorrectingVideo(true);
-                  await handleAutoLinkCorrective();
-                  setIsAutoCorrectingVideo(false);
-                  alert("Busca concluída! O melhor playback de karaokê instrumental para esta música foi mapeado e sincronizado.");
-                }}
-                disabled={isAutoCorrectingVideo}
-                className="btn btn-primary w-full max-w-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 mb-4 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
-                style={{ fontSize: '12px', fontWeight: 'bold' }}
-              >
-                <Sparkles className="w-4 h-4 text-accent" />
-                {isAutoCorrectingVideo ? "Buscando Playback..." : "Auto-Corrigir Vídeo (Buscar Playback)"}
-              </button>
+
               
               {/* Box rápido para trocar o vídeo caso esteja indisponível */}
               <div className="w-full max-w-sm glass-panel p-3 bg-black/60 border border-white/5 rounded-xl">
