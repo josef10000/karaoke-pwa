@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Mic2, Music, Mic, Upload, Trophy } from 'lucide-react';
 import Home from './components/Home';
 import Player from './components/Player';
-import Import from './components/Import';
 import Results from './components/Results';
 import AudioCenter from './components/AudioCenter';
 import GlobalLeaderboard from './components/GlobalLeaderboard';
@@ -134,11 +133,6 @@ export default function App() {
                 setSelectedAudioDevice={setSelectedAudioDevice}
               />
             )}
-            
-            {activeTab === 'import' && (
-              <Import onNavigateHome={handleNavigateHome} />
-            )}
-            
             {activeTab === 'leaderboard' && (
               <GlobalLeaderboard />
             )}

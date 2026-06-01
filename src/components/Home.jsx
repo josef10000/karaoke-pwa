@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Music, Sparkles, Upload, Play } from 'lucide-react';
-import { collection, getDocs } from 'firebase/firestore';
+import { Search, Music, Sparkles, Upload, Play, Plus, X, AlertCircle } from 'lucide-react';
+import { collection, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { songsCatalog } from '../songs-catalog';
+import { extractYouTubeId } from '../utils/ultrastar';
 
 // Cache global em memória para as capas de álbuns para evitar limites de taxa de chamadas
 const albumCoversCache = {};
@@ -74,32 +75,94 @@ function AlbumCover({ title, artist }) {
 }
 
 
-export default function Home({ onSelectSong, onNavigateToImport }) {
+export default function Home({ onSelectSong }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [dbSongs, setDbSongs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Busca músicas personalizadas salvas no Firebase Firestore
-  useEffect(() => {
-    const fetchDbSongs = async () => {
-      setIsLoading(true);
-      try {
-        const querySnapshot = await getDocs(collection(db, 'songs'));
-        const songsList = [];
-        querySnapshot.forEach((doc) => {
-          songsList.push({ id: doc.id, ...doc.data(), isUserUploaded: true });
-        });
-        setDbSongs(songsList);
-      } catch (err) {
-        console.error("Falha ao buscar músicas do Firebase: ", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Formulário de Cadastro Rápido
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newArtist, setNewArtist] = useState('');
+  const [newYoutubeLink, setNewYoutubeLink] = useState('');
+  const [newCategory, setNewCategory] = useState('Nacional');
+  const [registerError, setRegisterError] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [registerSuccess, setRegisterSuccess] = useState(false);
 
+  // Busca músicas personalizadas salvas no Firebase Firestore
+  const fetchDbSongs = async () => {
+    setIsLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, 'songs'));
+      const songsList = [];
+      querySnapshot.forEach((doc) => {
+        songsList.push({ id: doc.id, ...doc.data(), isUserUploaded: true });
+      });
+      setDbSongs(songsList);
+    } catch (err) {
+      console.error("Falha ao buscar músicas do Firebase: ", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDbSongs();
   }, []);
+
+  const handleSaveToFirebase = async (e) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newArtist.trim() || !newYoutubeLink.trim()) {
+      setRegisterError("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    const ytId = extractYouTubeId(newYoutubeLink);
+    if (!ytId) {
+      setRegisterError("Por favor, informe um link do YouTube válido.");
+      return;
+    }
+
+    setIsRegistering(true);
+    setRegisterError('');
+
+    try {
+      const docData = {
+        title: newTitle.trim(),
+        artist: newArtist.trim(),
+        bpm: 120,
+        gap: 0,
+        youtubeId: ytId,
+        notes: [], // partitura de notas inicia vazia (fallback automático do Player)
+        category: newCategory,
+        createdAt: new Date().toISOString()
+      };
+
+      await addDoc(collection(db, 'songs'), docData);
+      setRegisterSuccess(true);
+      
+      // Limpa os campos
+      setNewTitle('');
+      setNewArtist('');
+      setNewYoutubeLink('');
+      setNewCategory('Nacional');
+
+      // Atualiza o catálogo
+      await fetchDbSongs();
+
+      setTimeout(() => {
+        setRegisterSuccess(false);
+        setShowRegisterForm(false);
+      }, 1500);
+    } catch (err) {
+      console.error("Falha ao cadastrar música no Firebase: ", err);
+      setRegisterError("Ocorreu um erro ao gravar no banco de dados. Tente novamente.");
+    } finally {
+      setIsRegistering(false);
+    }
+  };
 
   // Une o catálogo estático com o catálogo dinâmico do Firebase
   const allSongs = [...songsCatalog, ...dbSongs];
@@ -129,6 +192,18 @@ export default function Home({ onSelectSong, onNavigateToImport }) {
           <h2 className="text-3xl font-black font-title text-white">Catálogo de Faixas</h2>
           <p className="text-xs text-color-text-muted mt-0.5">Explore as melodias mapeadas ou busque suas faixas favoritas para performance.</p>
         </div>
+        <button
+          onClick={() => {
+            if (searchTerm.trim()) {
+              setNewTitle(searchTerm);
+            }
+            setShowRegisterForm(true);
+          }}
+          className="btn btn-primary flex items-center gap-1.5 text-xs py-2.5 px-4 rounded-xl shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:scale-105 active:scale-95 transition-all duration-300"
+          style={{ minHeight: 'auto' }}
+        >
+          <Plus className="w-4 h-4" /> Cadastrar Música
+        </button>
       </div>
 
       {/* Barra de Busca (Largura Total Premium) */}
@@ -173,14 +248,29 @@ export default function Home({ onSelectSong, onNavigateToImport }) {
       </div>
 
       {filteredSongs.length === 0 ? (
-        <div className="glass-panel p-12 text-center">
-          <p className="text-color-text-muted mb-4">Nenhuma música encontrada com os filtros selecionados.</p>
-          <button
-            onClick={() => { setSearchTerm(''); setActiveFilter('all'); }}
-            className="btn btn-secondary"
-          >
-            Limpar Filtros
-          </button>
+        <div className="glass-panel p-12 text-center flex flex-col items-center justify-center gap-4">
+          <p className="text-color-text-muted">Nenhuma música encontrada com os termos ou filtros selecionados.</p>
+          <div className="flex gap-4">
+            <button
+              onClick={() => { setSearchTerm(''); setActiveFilter('all'); }}
+              className="btn btn-secondary text-xs py-2 px-4 rounded-xl"
+              style={{ minHeight: 'auto' }}
+            >
+              Limpar Filtros
+            </button>
+            <button
+              onClick={() => {
+                if (searchTerm.trim()) {
+                  setNewTitle(searchTerm);
+                }
+                setShowRegisterForm(true);
+              }}
+              className="btn btn-primary text-xs py-2 px-4 rounded-xl flex items-center gap-1.5 shadow-[0_0_15px_rgba(147,51,234,0.3)]"
+              style={{ minHeight: 'auto' }}
+            >
+              <Plus className="w-4 h-4" /> Cadastrar Faixa
+            </button>
+          </div>
         </div>
       ) : (
         <div className="song-grid">
@@ -224,6 +314,127 @@ export default function Home({ onSelectSong, onNavigateToImport }) {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal Premium Glassmorphic para Cadastrar Nova Música */}
+      {showRegisterForm && (
+        <div className="fixed inset-0 bg-black/75 backdrop-filter backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="glass-panel max-w-md w-full p-6 border border-purple-500/30 shadow-[0_0_40px_rgba(147,51,234,0.25)] relative animate-fade-in">
+            {/* Botão Fechar */}
+            <button 
+              onClick={() => {
+                setShowRegisterForm(false);
+                setRegisterError('');
+              }}
+              className="absolute top-4 right-4 text-color-text-muted hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-xl font-bold font-title text-white mb-2 flex items-center gap-2">
+              <Plus className="w-5 h-5 text-primary" /> Cadastrar Nova Faixa
+            </h3>
+            <p className="text-xs text-color-text-muted mb-5 leading-relaxed">
+              Adicione qualquer vídeo de Karaokê do YouTube. O sistema gerará a partitura de pitch e letras sincronizadas automaticamente ao dar Play!
+            </p>
+
+            {registerSuccess ? (
+              <div className="py-6 flex flex-col items-center justify-center gap-2 text-center animate-fade-in">
+                <div className="w-12 h-12 rounded-full bg-purple-500/10 border border-purple-500/35 flex items-center justify-center text-primary mb-2 shadow-[0_0_15px_rgba(147,51,234,0.4)]">
+                  <Sparkles className="w-6 h-6 animate-pulse" />
+                </div>
+                <h4 className="font-bold text-white">Música Cadastrada com Sucesso!</h4>
+                <p className="text-[10px] text-color-text-muted">A faixa está pronta no catálogo. Prepare sua voz!</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveToFirebase} className="flex flex-col gap-4">
+                {/* Nome da Música */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-color-text-muted uppercase tracking-wider">Título da Música</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Quem Sabe um Dia, Bohemian Rhapsody"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="input-field py-2.5 px-3.5 text-sm"
+                  />
+                </div>
+
+                {/* Nome do Artista */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-color-text-muted uppercase tracking-wider">Artista</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Catedral, Queen"
+                    value={newArtist}
+                    onChange={(e) => setNewArtist(e.target.value)}
+                    className="input-field py-2.5 px-3.5 text-sm"
+                  />
+                </div>
+
+                {/* Link do YouTube */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-color-text-muted uppercase tracking-wider">Link do Vídeo do YouTube (Karaokê)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: https://www.youtube.com/watch?v=..."
+                    value={newYoutubeLink}
+                    onChange={(e) => setNewYoutubeLink(e.target.value)}
+                    className="input-field py-2.5 px-3.5 text-sm"
+                  />
+                </div>
+
+                {/* Categoria/Gênero */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-color-text-muted uppercase tracking-wider">Categoria / Idioma</label>
+                  <select
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    className="select-field py-2 px-3 text-xs"
+                  >
+                    <option value="Nacional">🇧🇷 Nacional (Música Brasileira)</option>
+                    <option value="Internacional">🌎 Internacional (Inglês, Espanhol, etc.)</option>
+                  </select>
+                </div>
+
+                {/* Mensagem de Erro */}
+                {registerError && (
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-red-950/20 border border-red-500/35 text-red-400 text-xs mt-1">
+                    <AlertCircle className="w-4 h-4 shrink-0 animate-bounce" />
+                    <span>{registerError}</span>
+                  </div>
+                )}
+
+                {/* Botões de Ação */}
+                <div className="flex gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRegisterForm(false);
+                      setRegisterError('');
+                    }}
+                    className="btn btn-secondary flex-1 py-2 px-4 rounded-xl text-xs"
+                    disabled={isRegistering}
+                    style={{ minHeight: 'auto' }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary flex-1 py-2 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5"
+                    disabled={isRegistering}
+                    style={{ minHeight: 'auto' }}
+                  >
+                    {isRegistering ? "Gravando..." : "Cadastrar Faixa"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       )}
     </div>
